@@ -2,21 +2,22 @@ const models = require("../models");
 const bcrypt = require("bcrypt"); // module de cryptage du mot de passe
 const jwt = require("jsonwebtoken"); // module permettant la création d'un jeton d'authentification
 const jwtUtils = require("../utils/jwt.utils");
+const fs = require("fs"); // module permettant l'enregistrement d'une image sur le serveur
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 
 module.exports = {
   signup: function (req, res) {
-    const email = req.body.email;
-    const username = req.body.username;
-    const password = req.body.password;
-    const bio = req.body.bio;
+    let username = req.body.username;
+    let email = req.body.email;
+    let password = req.body.password;
+    let bio = req.body.bio;
+    let image;
 
     if (email == null || username == null || password == null) {
       return res.status(400).json({
         erreur: "les champs: Email, Username et Password sont obligatoires",
       });
     }
-
     models.User.findOne({
       attributes: ["email", "username"],
       where: {
@@ -25,21 +26,53 @@ module.exports = {
     })
       .then((userFound) => {
         if (!userFound) {
-          bcrypt.hash(password, 10, function (err, hash) {
-            models.User.create({
-              email: email,
-              username: username,
-              password: hash,
-              bio: bio,
-              isAdmin: 0,
-            })
-              .then(function (newUser) {
-                return res.status(201).json({
-                  message: `nouvel utilisateur créé avec le userId ${newUser.id}`,
-                });
+          if (req.file != null) {
+            bcrypt.hash(password, 10, function (err, hash) {
+              models.User.create({
+                username: username,
+                email: email,
+                password: hash,
+                bio: bio,
+                avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+                isAdmin: 0,
               })
-              .catch((error) => res.status(500).json({ error: "Impossible de créer un nouvel utilisateur" }));
-          });
+                .then(function (newUser) {
+                  return res.status(201).json({
+                    userId: newUser.id,
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
+                    message: `nouvel utilisateur créé avec le userId ${newUser.id}`,
+                  });
+                })
+                .catch((error) =>
+                  res.status(500).json({ error: "Impossible de créer un nouvel utilisateur" })
+                );
+            });
+          } else {
+            bcrypt.hash(password, 10, function (err, hash) {
+              models.User.create({
+                username: username,
+                email: email,
+                password: hash,
+                bio: bio,
+                avatar: null,
+                isAdmin: 0,
+              })
+                .then(function (newUser) {
+                  return res.status(201).json({
+                    userId: newUser.id,
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
+                    message: "nouvel utilisateur créé avec succès",
+                  });
+                })
+                .catch((error) =>
+                  res.status(500).json({ error: "Impossible de créer un nouvel utilisateur" })
+                );
+            });
+          }
         } else if (userFound.email == email) {
           return res.status(401).json({ error: "email déjà présent dans la base !" });
         } else if (userFound.username == username) {
@@ -89,6 +122,7 @@ module.exports = {
         "id",
         "username",
         "bio",
+        "avatar",
         [
           Sequelize.literal(`(
                     SELECT COUNT(*)
@@ -106,7 +140,7 @@ module.exports = {
   getOneUser: function (req, res) {
     models.User.findOne({
       group: "U_Posts.id",
-      attributes: ["username", "bio"],
+      attributes: ["username", "bio", "avatar"],
       where: { id: req.params.id },
       include: {
         model: models.Post,
@@ -157,20 +191,39 @@ module.exports = {
     let username = req.body.username;
     let email = req.body.email;
     let bio = req.body.bio;
+    let avatar = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
     models.User.findOne({
       where: { id: userId },
     })
-      .then((userFound) =>
-        userFound
-          .update({
+      .then((userFound) => {
+        if (req.file) {
+          userFound.update({
             username: username ? username : userFound.username,
             email: email ? email : userFound.email,
             bio: bio ? bio : userFound.bio,
-          })
-          .then((updateProfile) => res.status(201).json(updateProfile)) // a vérifier
-          .catch((error) => res.status(500).json({ error: " Utilisateur non trouvé  " }))
-      )
+            avatar: avatar ? avatar : userFound.file,
+          });
+          if (avatar != userfound.avatar && userFound.avatar != null) {
+            const filename = userFound.avatar.split("/images/")[1];
+            fs.unlink(`images/${filename}`, () => {
+              return res.status(201).json(userFound);
+            });
+          } else {
+            return res.status(201).json(userFound);
+          }
+        } else {
+          userFound
+            .update({
+              username: username ? username : userFound.username,
+              email: email ? email : userFound.email,
+              bio: bio ? bio : userFound.bio,
+            })
+            .then((updateProfile) => res.status(201).json(updateProfile)) // a vérifier
+            .catch((error) => res.status(500).json({ error: " Utilisateur non trouvé  " }));
+        }
+      })
+
       .catch((error) => res.status(500).json({ error: "Le profil n'a pas été mis à jour " }));
   },
 
@@ -185,13 +238,45 @@ module.exports = {
         if (userFound.id != userId) {
           return res.status(401).json({ message: "Vous ne pouvez pas supprimé ce compte" });
         } else {
+          if (userFound.avatar) {
+            let avatar = userFound.avatar.split("/images/")[1];
+            fs.unlink(`images/${filename}`, () => {
+              models.User.destroy({
+                where: { id: userId },
+              })
+                .then(() => res.status(200).json({ message: "Objet supprimé !" }))
+                .catch((error) =>
+                  res.status(400).json({ error: "Impossible de supprimer le message" })
+                );
+            });
+          }
           models.User.destroy({
             where: { id: userId },
           })
-            .then(() => res.status(201).json(`L'utilisateur ${userFound.username} a bien été supprimé`))
-            .catch((error) => res.status(500).json({ error: "problème à la suppression du compte" }));
+            .then(() =>
+              res.status(201).json(`L'utilisateur ${userFound.username} a bien été supprimé`)
+            )
+            .catch((error) =>
+              res.status(500).json({ error: "problème à la suppression du compte" })
+            );
         }
       })
       .catch((error) => res.status(500).json({ error: "Aucun utilisateur correspondant" }));
   },
 };
+
+/*
+   if (req.file) {
+            postUpdate.update({
+              title: title,
+              content: content,
+              image: image,
+            });
+            if (image != postUpdate.image && postUpdate.image != null) {
+              const filename = postUpdate.image.split("/images/")[1];
+              fs.unlink(`images/${filename}`, () => {
+                return res.status(201).json(postUpdate);
+              });
+            }
+            return res.status(201).json(postUpdate); 
+    */

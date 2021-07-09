@@ -14,11 +14,13 @@ const commentsRoutes = require("./routes/comments");
 
 // appel des différentes fonctions
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 app.use(headers);
 
-app.use("/api/images", express.static(path.join(__dirname, "images")));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 app.use("/api/posts", postsRoutes, commentsRoutes, likesRoutes);
 app.use("/api/users", usersRoutes);
 
