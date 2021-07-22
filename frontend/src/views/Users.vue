@@ -1,6 +1,12 @@
 <template>
   <b-jumbotron bg-variant="light" class="my-5">
-    <b-card no-body style="max-width: 40rem" class="mx-auto" v-for="user in users" :key="user.id">
+    <b-card
+      no-body
+      style="max-width: 40rem"
+      class="mx-auto mb-5"
+      v-for="user in users"
+      :key="user.id"
+    >
       <template #header>
         <b-row class="mb-0 text-left">
           <b-col cols="10">
@@ -19,7 +25,7 @@
       <b-card-footer class="mt-1">
         <b-row class="align-items-center">
           <b-col>
-            <b-button :to="{ name: 'MyPosts' }"
+            <b-button :to="{ path: `/posts/${user.id}` }"
               ><b-badge variant="light">{{ user.nbPosts }}</b-badge> Publications</b-button
             ></b-col
           ></b-row

@@ -37,10 +37,8 @@
 </template>
 
 <script>
-const axios = require("axios");
-const instance = axios.create({
-  baseURL: "http://localhost:3000/api/",
-});
+import instance from "../axios/configAxios";
+
 export default {
   name: "Login",
   components: {},
@@ -60,9 +58,11 @@ export default {
         .post("/users/login", this.form)
         .then((response) => {
           if (response.status == "200") {
-            alert(JSON.stringify(response.data));
-            this.$router.push({ name: "Posts" });
+            localStorage.setItem("token", response.data.token);
           }
+          this.$nextTick(() => {
+            this.$router.push({ name: "Posts" });
+          });
         })
         .catch((error) => {
           error;

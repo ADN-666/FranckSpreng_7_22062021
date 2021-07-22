@@ -7,7 +7,6 @@ import Posts from "../views/Posts";
 import MyPosts from "../views/MyPosts";
 import Profil from "../views/Profil";
 import Users from "../views/Users";
-import NewPost from "../views/NewPost";
 
 Vue.use(VueRouter);
 
@@ -42,11 +41,6 @@ const routes = [
     path: "/posts/all",
     name: "Posts",
     component: Posts,
-  },
-  {
-    path: "/posts",
-    name: "NewPost",
-    component: NewPost,
   },
   {
     path: "/posts/:id",

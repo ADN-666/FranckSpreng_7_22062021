@@ -10,9 +10,9 @@
             alt="logo Groupomania"
         /></b-navbar-brand>
 
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+        <b-navbar-toggle target="nav-collapse" v-if="userInfo == true"></b-navbar-toggle>
 
-        <b-collapse id="nav-collapse" is-nav>
+        <b-collapse id="nav-collapse" is-nav v-if="userInfo == true">
           <b-navbar-nav class="ml-auto">
             <b-nav-item :to="{ name: 'Posts' }">Publications</b-nav-item>
             <b-nav-item :to="{ name: 'Users' }">Utilisateurs</b-nav-item>
@@ -32,10 +32,10 @@
             <b-nav-item-dropdown right>
               <!-- Using 'button-content' slot -->
               <template #button-content>
-                <em>User</em>
+                <em>{{ username }}</em>
               </template>
-              <b-dropdown-item :to="{ name: 'MyPosts' }">Mes publications</b-dropdown-item>
-              <b-dropdown-item :to="{ name: 'Profil' }">Profil</b-dropdown-item>
+              <b-dropdown-item :to="{ path: `/posts/${userId}` }">Mes publications</b-dropdown-item>
+              <b-dropdown-item :to="{ path: `/users/me/${userId}` }">Profil</b-dropdown-item>
               <b-dropdown-item-button v-b-modal.modal-exit>Déconnexion</b-dropdown-item-button>
             </b-nav-item-dropdown>
           </b-navbar-nav>
@@ -50,15 +50,47 @@
         </b-navbar-nav>
       </b-navbar>
     </footer>
-    <b-modal id="modal-exit" centered title="Avertissement">
+    <b-modal id="modal-exit" v-model="showModal" centered title="Avertissement">
       <p class="my-4">Etes-vous sûr de vouloir quitter l'application !</p>
-      <template #modal-footer="{ ok, cancel }">
-        <b-button modal-footer to="/" size="sm" variant="outline-info" @click="ok()">OUI</b-button>
+      <template #modal-footer="{ cancel }">
+        <b-button modal-footer size="sm" variant="outline-info" @click="ok()">OUI</b-button>
         <b-button modal-footer size="sm" variant="outline-danger" @click="cancel()">NON</b-button>
       </template>
     </b-modal>
   </div>
 </template>
+<script>
+import jwtDecode from "jwt-decode";
+
+export default {
+  data() {
+    return {
+      userInfo: false,
+      username: "",
+      userId: "",
+      showModal: false,
+    };
+  },
+  beforeMount() {
+    if (localStorage.getItem("token") != null) {
+      let token = localStorage.getItem("token");
+      let decoded = jwtDecode(token);
+      this.username = decoded.username;
+      this.userId = decoded.userId;
+      this.userInfo = true;
+    }
+  },
+  methods: {
+    ok() {
+      localStorage.removeItem("token");
+      this.showModal = false;
+      this.userInfo = false;
+      this.username = "";
+      this.$router.push({ name: "Home" });
+    },
+  },
+};
+</script>
 
 <style lang="scss">
 #app {

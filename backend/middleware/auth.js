@@ -5,10 +5,10 @@ const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.headers.authorization.replace("bearer ", "");
     const decodedtoken = jwt.verify(token, "doudou21steph29");
-    const userId = decodedtoken.id;
-    if (req.body.id && req.body.id !== userId) {
+    const userId = decodedtoken.userId;
+    if (req.body.userId && req.body.userId !== userId) {
       throw "User ID non valable !";
     } else {
       next();

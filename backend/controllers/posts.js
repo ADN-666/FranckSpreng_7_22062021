@@ -20,12 +20,12 @@ module.exports = {
 
   getAllPost: function (req, res) {
     models.Post.findAll({
-      group: "Id",
       attributes: [
         "id",
         "title",
         "content",
         "userId",
+        "createdAt",
         [
           Sequelize.literal(`(
                     SELECT COUNT(postId)
@@ -34,37 +34,6 @@ module.exports = {
                 )`),
           "nbComments",
         ],
-      ],
-      order: [["updatedAt", "DESC"]],
-      include: [
-        {
-          model: models.User,
-          as: "P_User",
-          attributes: ["username", "avatar"],
-        },
-        {
-          model: models.Like,
-          as: "P_Likes",
-          attributes: [
-            [Sequelize.fn("SUM", Sequelize.col("isLike")), "Likes"],
-            [Sequelize.fn("SUM", Sequelize.col("isDislike")), "Dislikes"],
-          ],
-        },
-      ],
-    })
-      .then((posts) => res.status(200).json(posts))
-      .catch((error) => res.status(400).json({ error }));
-  },
-
-  getOnePost: function (req, res) {
-    models.Post.findOne({
-      where: { id: req.params.id },
-      attributes: [
-        "title",
-        "content",
-
-        "createdAt",
-        "updatedAt",
         [
           Sequelize.literal(`(
                     SELECT SUM(isLike)
@@ -82,26 +51,60 @@ module.exports = {
           "Dislikes",
         ],
       ],
-      include: [
-        {
-          model: models.User,
-          as: "P_User",
-          attributes: ["username"],
-        },
-        {
-          model: models.Comment,
-          as: "P_Comments",
-          attributes: ["content", "createdAt", "updatedAt"],
-          include: {
-            model: models.User,
-            as: "C_User",
-            attributes: ["username"],
-          },
-        },
-      ],
+      include: {
+        model: models.User,
+        as: "P_User",
+
+        attributes: ["username", "id", "avatar"],
+      },
     })
-      .then((post) => res.status(200).json(post))
-      .catch((error) => res.status(404).json({ error }));
+      .then((posts) => res.status(200).json(posts))
+      .catch((error) => res.status(400).json({ error }));
+  },
+
+  getUserPost: function (req, res) {
+    models.Post.findAll({
+      where: { userId: req.params.userId },
+      attributes: [
+        "id",
+        "title",
+        "content",
+        "userId",
+        "createdAt",
+        [
+          Sequelize.literal(`(
+                    SELECT COUNT(postId)
+                    FROM Comments  WHERE
+                     Post.id = Comments.postId
+                )`),
+          "nbComments",
+        ],
+        [
+          Sequelize.literal(`(
+                    SELECT SUM(isLike)
+                    FROM Likes  WHERE
+                     Post.id = Likes.postId
+                )`),
+          "Likes",
+        ],
+        [
+          Sequelize.literal(`(
+                    SELECT SUM(isDislike)
+                    FROM Likes  WHERE
+                     Post.id = Likes.postId
+                )`),
+          "Dislikes",
+        ],
+      ],
+      include: {
+        model: models.User,
+        as: "P_User",
+
+        attributes: ["username", "id", "avatar"],
+      },
+    })
+      .then((posts) => res.status(200).json(posts))
+      .catch((error) => res.status(400).json({ error }));
   },
 
   updatePost: function (req, res) {
@@ -120,8 +123,10 @@ module.exports = {
             title: title,
             content: content,
           });
+          return res.status(200).json({ message: "Message modifié !" });
+        } else {
+          return res.status(500).json({ error: " Vous ne pouvez pas modifier ce post  " });
         }
-        return res.status(500).json({ error: " Vous ne pouvez pas modifier ce post  " });
       })
       .catch((error) => res.status(500).json({ error: " Un problème s'est produit  " }));
   },
@@ -137,7 +142,7 @@ module.exports = {
           models.Post.destroy({
             where: { id: post.id },
           })
-            .then(() => res.status(200).json({ message: "Objet supprimé !" }))
+            .then(() => res.status(200).json({ message: "Message supprimé !" }))
             .catch((error) =>
               res.status(400).json({ error: "Impossible de supprimer le message" })
             );

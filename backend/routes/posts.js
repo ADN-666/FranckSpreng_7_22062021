@@ -9,7 +9,7 @@ const postsCtrl = require("../controllers/posts");
 
 router.post("/", auth, postsCtrl.createPost);
 router.get("/all", auth, postsCtrl.getAllPost);
-router.get("/:id", auth, postsCtrl.getOnePost);
+router.get("/:userId", auth, postsCtrl.getUserPost);
 router.put("/:id", auth, postsCtrl.updatePost);
 router.delete("/:id", auth, postsCtrl.deletePost);
 

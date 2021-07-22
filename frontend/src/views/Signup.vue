@@ -66,10 +66,8 @@
 </template>
 
 <script>
-const axios = require("axios");
-const instance = axios.create({
-  baseURL: "http://localhost:3000/api/",
-});
+import instance from "../axios/configAxios";
+
 export default {
   name: "Signup",
   components: {},
@@ -100,7 +98,7 @@ export default {
         .post("/users/signup", formData)
         .then((response) => {
           if (response.status == "201") {
-            alert(JSON.stringify(response.data));
+            localStorage.setItem("token", response.data.token);
             this.$router.push({ name: "Posts" });
           }
         })

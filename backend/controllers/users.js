@@ -38,11 +38,14 @@ module.exports = {
               })
                 .then(function (newUser) {
                   return res.status(201).json({
-                    userId: newUser.id,
-                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
-                      expiresIn: "24h",
-                    }),
-                    message: `nouvel utilisateur créé avec le userId ${newUser.id}`,
+                    token: jwt.sign(
+                      { userId: newUser.id, username: newUser.username, avatar: newUser.avatar },
+                      "doudou21steph29",
+                      {
+                        expiresIn: "24h",
+                      }
+                    ),
+                    message: `nouvel utilisateur créé `,
                   });
                 })
                 .catch((error) =>
@@ -61,10 +64,13 @@ module.exports = {
               })
                 .then(function (newUser) {
                   return res.status(201).json({
-                    userId: newUser.id,
-                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
-                      expiresIn: "24h",
-                    }),
+                    token: jwt.sign(
+                      { userId: newUser.id, username: newUser.username, avatar: newUser.avatar },
+                      "doudou21steph29",
+                      {
+                        expiresIn: "24h",
+                      }
+                    ),
                     message: "nouvel utilisateur créé avec succès",
                   });
                 })
@@ -91,7 +97,7 @@ module.exports = {
     }
 
     models.User.findOne({
-      attributes: ["id", "password"],
+      attributes: ["id", "password", "username", "avatar"],
       where: { email: email },
     })
       .then((userFound) => {
@@ -105,10 +111,13 @@ module.exports = {
               return res.status(401).json({ error: "Mot de passe incorrect !" });
             }
             res.status(200).json({
-              userId: userFound.id,
-              token: jwt.sign({ userId: userFound.id }, "doudou21steph29", {
-                expiresIn: "24h",
-              }),
+              token: jwt.sign(
+                { userId: userFound.id, username: userFound.username, avatar: userFound.avatar },
+                "doudou21steph29",
+                {
+                  expiresIn: "24h",
+                }
+              ),
             });
           })
           .catch((error) => res.status(500).json({ error }));
@@ -133,7 +142,7 @@ module.exports = {
         ],
       ],
     })
-      .then((user) => res.status(201).json(user))
+      .then((user) => res.status(200).json(user))
       .catch((error) => res.status(500).json({ error }));
   },
 
@@ -179,7 +188,23 @@ module.exports = {
     const userId = jwtUtils.getUserId(headerAuth);
     models.User.findOne({
       where: { id: userId },
-      attributes: { exclude: ["password"] },
+      attributes: [
+        "avatar",
+        "bio",
+        "createdAt",
+        "email",
+        "updatedAt",
+        "username",
+
+        [
+          Sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM Posts AS Post WHERE
+                     Post.userId = User.id
+                )`),
+          "nbPosts",
+        ],
+      ],
     })
       .then((userFound) => res.status(200).json(userFound))
       .catch((error) => res.status(404).json({ error: "utilisateur introuvable" }));
@@ -193,38 +218,43 @@ module.exports = {
     let bio = req.body.bio;
     let avatar = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
-    models.User.findOne({
-      where: { id: userId },
-    })
-      .then((userFound) => {
-        if (req.file) {
-          userFound.update({
-            username: username ? username : userFound.username,
-            email: email ? email : userFound.email,
-            bio: bio ? bio : userFound.bio,
-            avatar: avatar ? avatar : userFound.file,
-          });
-          if (avatar != userfound.avatar && userFound.avatar != null) {
-            const filename = userFound.avatar.split("/images/")[1];
-            fs.unlink(`images/${filename}`, () => {
-              return res.status(201).json(userFound);
-            });
-          } else {
-            return res.status(201).json(userFound);
-          }
-        } else {
-          userFound
-            .update({
-              username: username ? username : userFound.username,
-              email: email ? email : userFound.email,
-              bio: bio ? bio : userFound.bio,
-            })
-            .then((updateProfile) => res.status(201).json(updateProfile)) // a vérifier
-            .catch((error) => res.status(500).json({ error: " Utilisateur non trouvé  " }));
-        }
+    if (req.file) {
+      models.User.findOne({
+        where: { id: userId },
       })
-
-      .catch((error) => res.status(500).json({ error: "Le profil n'a pas été mis à jour " }));
+        .then((userFound) => {
+          const filename = userFound.avatar.split("/images/")[1];
+          fs.unlink(`images/${filename}`, () => {
+            userFound
+              .update({
+                username: username,
+                email: email,
+                bio: bio,
+                avatar: avatar,
+              })
+              .then((userUpdate) => res.status(200).json(userUpdate))
+              .catch(() =>
+                res.status(400).json({
+                  error: "il y a eu un problème à la suppression de l'ancienne image !",
+                })
+              );
+          });
+        })
+        .catch(() =>
+          res.status(500).json({
+            error: "il y a eu un problème de traitement !",
+          })
+        );
+    } else {
+      userFound
+        .update({
+          username: username,
+          email: email,
+          bio: bio,
+        })
+        .then((userUpdate) => res.status(200).json(userUpdate))
+        .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
+    }
   },
 
   deleteUser: function (req, res) {
@@ -239,12 +269,12 @@ module.exports = {
           return res.status(401).json({ message: "Vous ne pouvez pas supprimé ce compte" });
         } else {
           if (userFound.avatar) {
-            let avatar = userFound.avatar.split("/images/")[1];
+            let filename = userFound.avatar.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => {
               models.User.destroy({
                 where: { id: userId },
               })
-                .then(() => res.status(200).json({ message: "Objet supprimé !" }))
+                .then(() => res.status(200).json({ message: "Utilisateur supprimé !" }))
                 .catch((error) =>
                   res.status(400).json({ error: "Impossible de supprimer le message" })
                 );
@@ -264,19 +294,3 @@ module.exports = {
       .catch((error) => res.status(500).json({ error: "Aucun utilisateur correspondant" }));
   },
 };
-
-/*
-   if (req.file) {
-            postUpdate.update({
-              title: title,
-              content: content,
-              image: image,
-            });
-            if (image != postUpdate.image && postUpdate.image != null) {
-              const filename = postUpdate.image.split("/images/")[1];
-              fs.unlink(`images/${filename}`, () => {
-                return res.status(201).json(postUpdate);
-              });
-            }
-            return res.status(201).json(postUpdate); 
-    */

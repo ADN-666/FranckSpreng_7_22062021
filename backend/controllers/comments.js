@@ -11,32 +11,24 @@ module.exports = {
       content: req.body.content,
     };
     models.Comment.create(comment)
-      .then((newComment) => res.status(201).json({ message: "Commentaire enregistré !", newComment }))
+      .then((newComment) =>
+        res.status(201).json({ message: "Commentaire enregistré !", newComment })
+      )
       .catch((error) => res.status(400).json({ error }));
   },
 
-  /** 
   getAllComments: function (req, res) {
     models.Comment.findAll({
       where: { postId: req.params.postId },
-      include: [
-        {
-          model: models.User,
-          as: "user",
-          attributes: ["username"],
-        },
-        {
-          model: models.Post,
-          as: "post",
-          attributes: ["title", "content"],
-        },
-      ],
+      include: {
+        model: models.User,
+        as: "C_User",
+        attributes: ["username", "avatar"],
+      },
     })
       .then((post) => res.status(200).json(post))
       .catch((error) => res.status(404).json({ error }));
   },
-
-*/
 
   getOneComment: function (req, res) {
     models.Comment.findOne({
@@ -44,7 +36,7 @@ module.exports = {
       include: {
         model: models.User,
         as: "C_User",
-        attributes: ["username"],
+        attributes: ["username", "avatar"],
       },
     })
       .then((post) => res.status(200).json(post))
@@ -61,10 +53,10 @@ module.exports = {
     })
       .then((comUpdate) => {
         if (comUpdate.userId == userId) {
-          models.Comment.update({
-            content: content ? content : comUpdate.content,
+          comUpdate.update({
+            content: content,
           });
-          return res.status(201).json(comUpdate);
+          return res.status(200).json(comUpdate);
         } else {
           return res.status(404).json({ error: " Vous ne pouvez pas modifier ce commentaire " });
         }
