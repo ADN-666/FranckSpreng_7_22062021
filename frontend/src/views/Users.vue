@@ -35,10 +35,7 @@
   </b-jumbotron>
 </template>
 <script>
-const axios = require("axios");
-const instance = axios.create({
-  baseURL: "http://localhost:3000/api/",
-});
+import instance from "../axios/configAxios";
 
 export default {
   name: "Users",

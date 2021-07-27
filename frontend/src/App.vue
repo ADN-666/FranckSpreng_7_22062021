@@ -10,9 +10,9 @@
             alt="logo Groupomania"
         /></b-navbar-brand>
 
-        <b-navbar-toggle target="nav-collapse" v-if="userInfo == true"></b-navbar-toggle>
+        <b-navbar-toggle target="nav-collapse" v-if="userInfos.isLog == true"></b-navbar-toggle>
 
-        <b-collapse id="nav-collapse" is-nav v-if="userInfo == true">
+        <b-collapse id="nav-collapse" is-nav v-if="userInfos.isLog == true">
           <b-navbar-nav class="ml-auto">
             <b-nav-item :to="{ name: 'Posts' }">Publications</b-nav-item>
             <b-nav-item :to="{ name: 'Users' }">Utilisateurs</b-nav-item>
@@ -32,10 +32,14 @@
             <b-nav-item-dropdown right>
               <!-- Using 'button-content' slot -->
               <template #button-content>
-                <em>{{ username }}</em>
+                <em>{{ userInfos.username }}</em>
               </template>
-              <b-dropdown-item :to="{ path: `/posts/${userId}` }">Mes publications</b-dropdown-item>
-              <b-dropdown-item :to="{ path: `/users/me/${userId}` }">Profil</b-dropdown-item>
+              <b-dropdown-item :to="{ path: `/posts/${userInfos.userId}` }"
+                >Mes publications</b-dropdown-item
+              >
+              <b-dropdown-item :to="{ path: `/users/me/${userInfos.userId}` }"
+                >Profil</b-dropdown-item
+              >
               <b-dropdown-item-button v-b-modal.modal-exit>Déconnexion</b-dropdown-item-button>
             </b-nav-item-dropdown>
           </b-navbar-nav>
@@ -60,32 +64,29 @@
   </div>
 </template>
 <script>
-import jwtDecode from "jwt-decode";
+//import jwtDecode from "jwt-decode";
+
+import { mapState } from "vuex";
 
 export default {
   data() {
     return {
-      userInfo: false,
-      username: "",
-      userId: "",
       showModal: false,
     };
   },
-  beforeMount() {
-    if (localStorage.getItem("token") != null) {
-      let token = localStorage.getItem("token");
-      let decoded = jwtDecode(token);
-      this.username = decoded.username;
-      this.userId = decoded.userId;
-      this.userInfo = true;
-    }
+
+  computed: {
+    ...mapState(["userInfos"]),
   },
+
   methods: {
     ok() {
-      localStorage.removeItem("token");
       this.showModal = false;
-      this.userInfo = false;
-      this.username = "";
+      this.$store.commit("TOKEN", "");
+      this.$store.commit("ISLOG", false);
+      this.$store.commit("USERID", "");
+      this.$store.commit("USERNAME", "");
+      this.$store.commit("AVATAR", "");
       this.$router.push({ name: "Home" });
     },
   },

@@ -10,7 +10,7 @@
               {{ username }} - publié il y a {{ createdAt }} </b-col
             ><b-col cols="2">
               <b-dropdown
-                v-if="comUserId == User"
+                v-if="comUserId == userInfos.userId"
                 size="sm"
                 variant="link"
                 toggle-class="text-decoration-none text-dark"
@@ -88,8 +88,8 @@
 </template>
 
 <script>
-import jwtDecode from "jwt-decode";
 import instance from "../axios/configAxios";
+import { mapState } from "vuex";
 
 export default {
   name: "Comment",
@@ -127,17 +127,15 @@ export default {
     return {
       updateComShow: false,
       deleteComShow: false,
+
       formCommentUpdate: {
         content: this.content,
       },
-      User: "",
     };
   },
 
-  beforeMount() {
-    let token = localStorage.getItem("token");
-    let decoded = jwtDecode(token);
-    return (this.User = parseInt(decoded.userId));
+  computed: {
+    ...mapState(["userInfos"]),
   },
 
   methods: {

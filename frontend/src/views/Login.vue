@@ -57,16 +57,17 @@ export default {
       instance
         .post("/users/login", this.form)
         .then((response) => {
-          if (response.status == "200") {
-            localStorage.setItem("token", response.data.token);
-          }
-          this.$nextTick(() => {
-            this.$router.push({ name: "Posts" });
-          });
+          this.$store.commit("TOKEN", response.data.token);
+          this.$store.commit("ISLOG", true);
+          this.$store.commit("USERID", response.data.userId);
+          this.$store.commit("USERNAME", response.data.username);
+          this.$store.commit("AVATAR", response.data.avatar);
         })
         .catch((error) => {
           error;
         });
+
+      this.$router.push({ name: "Posts" });
     },
     onReset(event) {
       event.preventDefault();

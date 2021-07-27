@@ -13,6 +13,8 @@
         :nbComments="post.nbComments"
         :Likes="post.Likes"
         :Dislikes="post.Dislikes"
+        :isLike="post.P_Likes.isLike"
+        :isDislike="post.P_Likes.isDislike"
         :username="post.P_User.username"
         :avatar="post.P_User.avatar"
         :key="post.id"
@@ -35,7 +37,7 @@ export default {
     };
   },
 
-  mounted() {
+  beforeMount() {
     this.getPosts();
   },
 

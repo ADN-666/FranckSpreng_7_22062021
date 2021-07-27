@@ -9,7 +9,7 @@
             {{ username }} - publié il y a {{ createdAt }} </b-col
           ><b-col cols="2"
             ><b-dropdown
-              v-if="userId == User"
+              v-if="userId == userInfos.userId"
               size="sm"
               variant="link"
               toggle-class="text-decoration-none text-dark"
@@ -40,20 +40,31 @@
       </b-card-body>
       <b-card-footer class="mt-1">
         <b-row class="align-items-center"
-          ><b-col cols="2"
+          ><b-col cols="3"
             ><b-button size="sm" to="#" variant="link" class="text-dark"
               ><b-badge variant="light" v-if="Likes != null">{{ Likes }}</b-badge>
               <b-badge variant="light" v-else>0</b-badge>
-              <b-icon icon="hand-thumbs-up" font-scale="2"></b-icon></b-button
+              <b-icon
+                icon="hand-thumbs-up"
+                font-scale="2"
+                v-if="isLike == true"
+                v-model="isLike"
+              ></b-icon
+              ><b-icon
+                icon="hand-thumbs-up"
+                font-scale="2"
+                v-else
+                v-model="isLike"
+              ></b-icon></b-button
           ></b-col>
-          <b-col cols="2"
-            ><b-button size="sm" to="#" variant="link" class="text-dark"
+          <b-col cols="3"
+            ><b-button size="sm" to="#" variant="link" class="text-dark" v-model="isDislike"
               ><b-badge variant="light" v-if="Dislikes != null">{{ Dislikes }}</b-badge>
               <b-badge variant="light" v-else>0</b-badge>
               <b-icon icon="hand-thumbs-down" font-scale="2"></b-icon></b-button
           ></b-col>
 
-          <b-col cols="8" class="text-right">
+          <b-col cols="6" class="text-right">
             <b-button v-b-toggle="'collapse' + postId"
               ><b-badge variant="light">{{ nbComments }}</b-badge> Commentaires</b-button
             ></b-col
@@ -142,7 +153,7 @@
 <script>
 import Comment from "@/components/Comment";
 import instance from "../axios/configAxios";
-import jwtDecode from "jwt-decode";
+import { mapState } from "vuex";
 
 export default {
   name: "Post",
@@ -183,6 +194,16 @@ export default {
       required: false,
       default: "0",
     },
+    isLike: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    isDislike: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     username: {
       type: String,
       required: true,
@@ -198,7 +219,7 @@ export default {
       updatePostShow: false,
       deletePostShow: false,
       comments: [],
-      User: "",
+
       formPostUpdate: {
         title: this.title,
         content: this.content,
@@ -210,15 +231,14 @@ export default {
   },
 
   mounted() {
-    this.getToken(), this.getCom();
+    this.getCom();
+  },
+
+  computed: {
+    ...mapState(["userInfos"]),
   },
 
   methods: {
-    getToken() {
-      let token = localStorage.getItem("token");
-      let decoded = jwtDecode(token);
-      return (this.User = parseInt(decoded.userId));
-    },
     getCom() {
       let load = this.nbComments;
       if (load > 0) {

@@ -48,6 +48,7 @@ export default {
 
     next();
   },
+
   methods: {
     getPosts() {
       instance

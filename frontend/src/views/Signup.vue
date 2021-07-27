@@ -82,6 +82,7 @@ export default {
       show: true,
     };
   },
+
   methods: {
     upload(event) {
       this.image = event.target.files[0];
@@ -97,15 +98,19 @@ export default {
       instance
         .post("/users/signup", formData)
         .then((response) => {
-          if (response.status == "201") {
-            localStorage.setItem("token", response.data.token);
-            this.$router.push({ name: "Posts" });
-          }
+          this.$store.commit("TOKEN", response.data.token);
+          this.$store.commit("ISLOG", true);
+          this.$store.commit("USERID", response.data.userId);
+          this.$store.commit("USERNAME", response.data.username);
+          this.$store.commit("AVATAR", response.data.avatar);
+          this.$store.commit("LOADER", true);
         })
         .catch((error) => {
           error;
         });
+      this.$router.push({ name: "Posts" });
     },
+
     onReset(event) {
       event.preventDefault();
       // Reset our form values

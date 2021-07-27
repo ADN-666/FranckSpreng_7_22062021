@@ -119,7 +119,7 @@
 
 <script>
 import instance from "../axios/configAxios";
-import jwtDecode from "jwt-decode";
+import { mapState } from "vuex";
 
 export default {
   name: "Profil",
@@ -137,24 +137,21 @@ export default {
       },
 
       image: "",
-      userId: "",
     };
   },
 
+  computed: {
+    ...mapState(["userInfos"]),
+  },
+
   beforeMount() {
-    this.getToken(), this.getUser();
+    this.getUser();
   },
 
   methods: {
-    getToken() {
-      let token = localStorage.getItem("token");
-      let decoded = jwtDecode(token);
-      return (this.userId = parseInt(decoded.userId));
-    },
-
     getUser() {
       instance
-        .get(`/users/me/${this.userId}`)
+        .get(`/users/me/${this.userInfos.userId}`)
         .then((response) => (this.user = response.data))
 
         .catch((error) => {
@@ -173,8 +170,12 @@ export default {
       formData.set("bio", this.user.bio);
       formData.append("image", this.image);
       instance
-        .put(`/users/me/${this.userId}`, formData)
-        .then((response) => (this.user = response.data))
+        .put(`/users/me/${this.userInfos.userId}`, formData)
+        .then((response) => {
+          (this.user = response.data),
+            this.$store.commit("USERNAME", response.data.username),
+            this.$store.commit("AVATAR", response.data.avatar);
+        })
         .catch((error) => {
           error;
         });

@@ -11,7 +11,6 @@ module.exports = {
     let email = req.body.email;
     let password = req.body.password;
     let bio = req.body.bio;
-    let image;
 
     if (email == null || username == null || password == null) {
       return res.status(400).json({
@@ -36,16 +35,14 @@ module.exports = {
                 avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
                 isAdmin: 0,
               })
-                .then(function (newUser) {
+                .then((newUser) => {
                   return res.status(201).json({
-                    token: jwt.sign(
-                      { userId: newUser.id, username: newUser.username, avatar: newUser.avatar },
-                      "doudou21steph29",
-                      {
-                        expiresIn: "24h",
-                      }
-                    ),
-                    message: `nouvel utilisateur créé `,
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
+                    avatar: newUser.avatar,
+                    username: newUser.username,
+                    userId: newUser.id,
                   });
                 })
                 .catch((error) =>
@@ -64,14 +61,12 @@ module.exports = {
               })
                 .then(function (newUser) {
                   return res.status(201).json({
-                    token: jwt.sign(
-                      { userId: newUser.id, username: newUser.username, avatar: newUser.avatar },
-                      "doudou21steph29",
-                      {
-                        expiresIn: "24h",
-                      }
-                    ),
-                    message: "nouvel utilisateur créé avec succès",
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
+                    avatar: newUser.avatar,
+                    username: newUser.username,
+                    userId: newUser.id,
                   });
                 })
                 .catch((error) =>
@@ -111,13 +106,12 @@ module.exports = {
               return res.status(401).json({ error: "Mot de passe incorrect !" });
             }
             res.status(200).json({
-              token: jwt.sign(
-                { userId: userFound.id, username: userFound.username, avatar: userFound.avatar },
-                "doudou21steph29",
-                {
-                  expiresIn: "24h",
-                }
-              ),
+              token: jwt.sign({ userId: userFound.id }, "doudou21steph29", {
+                expiresIn: "24h",
+              }),
+              avatar: userFound.avatar,
+              username: userFound.username,
+              userId: userFound.id,
             });
           })
           .catch((error) => res.status(500).json({ error }));
@@ -216,7 +210,7 @@ module.exports = {
     let username = req.body.username;
     let email = req.body.email;
     let bio = req.body.bio;
-    let avatar = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    let image = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
     if (req.file) {
       models.User.findOne({
@@ -230,7 +224,7 @@ module.exports = {
                 username: username,
                 email: email,
                 bio: bio,
-                avatar: avatar,
+                avatar: image,
               })
               .then((userUpdate) => res.status(200).json(userUpdate))
               .catch(() =>

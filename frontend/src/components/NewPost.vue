@@ -11,9 +11,9 @@
         <template #header>
           <b-row class="mb-0 text-left">
             <b-col cols="10">
-              <b-avatar variant="info" :src="user.avatar"></b-avatar>
+              <b-avatar variant="info" :src="userInfos.avatar"></b-avatar>
 
-              {{ user.username }}</b-col
+              {{ userInfos.username }}</b-col
             >
           </b-row>
         </template>
@@ -60,7 +60,7 @@
 
 <script>
 import instance from "../axios/configAxios";
-import jwtDecode from "jwt-decode";
+import { mapState } from "vuex";
 
 export default {
   name: "NewPost",
@@ -69,10 +69,6 @@ export default {
     return {
       show: false,
       visible: false,
-      user: {
-        username: "",
-        avatar: "",
-      },
 
       form: {
         title: "",
@@ -81,29 +77,20 @@ export default {
     };
   },
 
-  mounted() {
-    this.getToken();
+  computed: {
+    ...mapState(["userInfos"]),
   },
 
   methods: {
-    getToken() {
-      let token = localStorage.getItem("token");
-      let decoded = jwtDecode(token);
-      return (this.user.username = decoded.username), (this.user.avatar = decoded.avatar);
-    },
-
     onSubmit(event) {
       event.preventDefault();
       instance
         .post("/posts/", this.form)
-        .then((response) => {
-          if (response.status == "201") {
-            window.location.reload();
-          }
-        })
+        .then(() => {})
         .catch((error) => {
           error;
         });
+      window.location.reload;
     },
     onReset(event) {
       event.preventDefault();
@@ -121,6 +108,3 @@ export default {
 </script>
 
 <style></style>
-
-/*import jwtDecode from "jwt-decode"; const token = localStorage.getItem("token"); const decoded =
-jwtDecode(token);*/
