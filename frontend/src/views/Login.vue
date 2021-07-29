@@ -4,7 +4,7 @@
       <b-row class="my-5 h2">
         <b-col><p>Accès utilisateur</p></b-col>
       </b-row>
-      <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+      <b-form @reset="onReset" v-if="show">
         <b-form-group id="input-group-1" label="Email" label-for="input-1">
           <b-form-input
             id="input-1"
@@ -29,7 +29,9 @@
             required
           ></b-form-input>
         </b-form-group>
-        <b-button class="mr-5" type="submit" variant="primary">Soumettre</b-button>
+        <b-button class="mr-5" type="submit" @click.prevent="onSubmit" variant="primary"
+          >Soumettre</b-button
+        >
         <b-button type="reset" variant="danger">Effacer</b-button>
       </b-form>
     </b-jumbotron>
@@ -37,7 +39,7 @@
 </template>
 
 <script>
-import instance from "../axios/configAxios";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "Login",
@@ -51,23 +53,15 @@ export default {
       show: true,
     };
   },
-  methods: {
-    onSubmit(event) {
-      event.preventDefault();
-      instance
-        .post("/users/login", this.form)
-        .then((response) => {
-          this.$store.commit("TOKEN", response.data.token);
-          this.$store.commit("ISLOG", true);
-          this.$store.commit("USERID", response.data.userId);
-          this.$store.commit("USERNAME", response.data.username);
-          this.$store.commit("AVATAR", response.data.avatar);
-        })
-        .catch((error) => {
-          error;
-        });
 
-      this.$router.push({ name: "Posts" });
+  computed: {
+    ...mapActions(["login"]),
+    ...mapState(["userInfos"]),
+  },
+
+  methods: {
+    onSubmit() {
+      this.$store.dispatch("login", this.form);
     },
     onReset(event) {
       event.preventDefault();

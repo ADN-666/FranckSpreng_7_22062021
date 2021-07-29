@@ -240,8 +240,7 @@ export default {
 
   methods: {
     getCom() {
-      let load = this.nbComments;
-      if (load > 0) {
+      if (this.nbComments > 0) {
         instance
           .get(`/posts/${this.postId}/comments/all`)
           .then((response) => (this.comments = response.data))
@@ -254,38 +253,29 @@ export default {
       event.preventDefault();
       instance
         .put(`/posts/${this.postId}`, this.formPostUpdate)
-        .then((response) => response)
+        .then(() => this.$store.commit("KEY"))
         .catch((error) => {
           error;
         });
       this.updatePostShow = false;
-      this.$nextTick(() => {
-        window.location.reload();
-      });
     },
     deletePost() {
       instance
         .delete(`/posts/${this.postId}`)
-        .then((response) => response)
+        .then(() => this.$store.commit("KEY"))
         .catch((error) => {
           error;
         });
       this.deletePostShow = false;
-      this.$nextTick(() => {
-        window.location.reload();
-      });
     },
     createComment(event) {
       event.preventDefault();
       instance
         .post(`/posts/${this.postId}/comments`, this.formCommentCreate)
-        .then((response) => response)
+        .then(() => this.$store.commit("KEY"))
         .catch((error) => {
           error;
         });
-      this.$nextTick(() => {
-        window.location.reload();
-      });
     },
   },
 };

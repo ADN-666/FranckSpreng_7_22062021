@@ -66,8 +66,8 @@
 </template>
 
 <script>
-import instance from "../axios/configAxios";
-
+//import instance from "../axios/configAxios";
+import { mapActions } from "vuex";
 export default {
   name: "Signup",
   components: {},
@@ -83,6 +83,10 @@ export default {
     };
   },
 
+  computed: {
+    ...mapActions["signup"],
+  },
+
   methods: {
     upload(event) {
       this.image = event.target.files[0];
@@ -95,19 +99,8 @@ export default {
       formData.set("password", this.password);
       formData.set("bio", this.bio);
       formData.append("image", this.image);
-      instance
-        .post("/users/signup", formData)
-        .then((response) => {
-          this.$store.commit("TOKEN", response.data.token);
-          this.$store.commit("ISLOG", true);
-          this.$store.commit("USERID", response.data.userId);
-          this.$store.commit("USERNAME", response.data.username);
-          this.$store.commit("AVATAR", response.data.avatar);
-          this.$store.commit("LOADER", true);
-        })
-        .catch((error) => {
-          error;
-        });
+      this.$store.dispatch("signup", formData);
+
       this.$router.push({ name: "Posts" });
     },
 

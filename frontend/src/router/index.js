@@ -17,12 +17,12 @@ const routes = [
     component: Home,
   },
   {
-    path: "/users/signup",
+    path: "/signup",
     name: "Signup",
     component: Signup,
   },
   {
-    path: "/users/login",
+    path: "/login",
     name: "Login",
     component: Login,
   },
@@ -41,6 +41,9 @@ const routes = [
     path: "/posts/all",
     name: "Posts",
     component: Posts,
+    beforeEnter: (to, from, next) => {
+      localStorage.getItem("token") ? next() : next({ name: "Home" });
+    },
   },
   {
     path: "/posts/:id",

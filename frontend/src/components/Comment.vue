@@ -89,7 +89,7 @@
 
 <script>
 import instance from "../axios/configAxios";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "Comment",
@@ -135,7 +135,8 @@ export default {
   },
 
   computed: {
-    ...mapState(["userInfos"]),
+    ...mapState(["userInfos", "comments"]),
+    ...mapActions(["comments"]),
   },
 
   methods: {

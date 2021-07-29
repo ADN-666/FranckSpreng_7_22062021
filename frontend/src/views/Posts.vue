@@ -4,7 +4,8 @@
       <NewPost />
 
       <Post
-        v-for="post of posts"
+        v-for="post in posts"
+        :key="post.id"
         :postId="post.id"
         :title="post.title"
         :content="post.content"
@@ -17,7 +18,6 @@
         :isDislike="post.P_Likes.isDislike"
         :username="post.P_User.username"
         :avatar="post.P_User.avatar"
-        :key="post.id"
       />
     </b-jumbotron>
   </div>
@@ -26,31 +26,25 @@
 <script>
 import Post from "@/components/Post";
 import NewPost from "@/components/NewPost";
-import instance from "../axios/configAxios";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "Posts",
   components: { Post, NewPost },
   data() {
-    return {
-      posts: [],
-    };
+    return {};
   },
 
-  beforeMount() {
-    this.getPosts();
+  computed: {
+    ...mapState(["posts", "userInfos"]),
+    ...mapActions(["allposts"]),
   },
 
-  methods: {
-    getPosts() {
-      instance
-        .get("/posts/all")
-        .then((response) => (this.posts = response.data))
-        .catch((error) => {
-          error;
-        });
-    },
+  mounted() {
+    this.$store.dispatch("allposts");
   },
+
+  methods: {},
 };
 </script>
 <style></style>

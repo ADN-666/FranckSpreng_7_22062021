@@ -17,7 +17,7 @@
             >
           </b-row>
         </template>
-        <b-form @submit="onSubmit" @reset="onReset">
+        <b-form @submit.prevent="onSubmit" @reset="onReset">
           <b-card-body>
             <b-form-group id="input-group-1" label="Titre" label-for="input-1" class="text-dark">
               <b-form-input
@@ -59,12 +59,12 @@
 </template>
 
 <script>
-import instance from "../axios/configAxios";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "NewPost",
   components: {},
+
   data() {
     return {
       show: false,
@@ -79,18 +79,12 @@ export default {
 
   computed: {
     ...mapState(["userInfos"]),
+    ...mapActions(["newPost"]),
   },
 
   methods: {
-    onSubmit(event) {
-      event.preventDefault();
-      instance
-        .post("/posts/", this.form)
-        .then(() => {})
-        .catch((error) => {
-          error;
-        });
-      window.location.reload;
+    onSubmit() {
+      this.$store.dispatch("newPost", this.form);
     },
     onReset(event) {
       event.preventDefault();

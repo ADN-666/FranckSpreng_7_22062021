@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :key="upKey">
     <header>
       <b-navbar toggleable="lg" type="dark" variant="info">
         <b-navbar-brand
@@ -46,7 +46,8 @@
         </b-collapse>
       </b-navbar>
     </header>
-    <router-view />
+    <router-view :key="$route.fullPath" />
+
     <footer>
       <b-navbar type="light" variant="light">
         <b-navbar-nav class="mx-auto">
@@ -64,8 +65,6 @@
   </div>
 </template>
 <script>
-//import jwtDecode from "jwt-decode";
-
 import { mapState } from "vuex";
 
 export default {
@@ -76,7 +75,12 @@ export default {
   },
 
   computed: {
-    ...mapState(["userInfos"]),
+    ...mapState(["userInfos", "upKey"]),
+  },
+
+  updated() {
+    this.$store.commit("KEYDEL");
+    console.log(this.upKey);
   },
 
   methods: {
@@ -84,10 +88,13 @@ export default {
       this.showModal = false;
       this.$store.commit("TOKEN", "");
       this.$store.commit("ISLOG", false);
+      this.$store.commit("LOADER", false);
       this.$store.commit("USERID", "");
       this.$store.commit("USERNAME", "");
       this.$store.commit("AVATAR", "");
+      this.$store.commit("POSTS", "");
       this.$router.push({ name: "Home" });
+      localStorage.removeItem("token");
     },
   },
 };
