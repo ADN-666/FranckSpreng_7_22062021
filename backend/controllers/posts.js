@@ -13,59 +13,9 @@ module.exports = {
       title: req.body.title,
       content: req.body.content,
     };
-    models.Post.create(post).then((post) =>
-      models.Post.findOne({
-        where: { id: post.id },
-        attributes: [
-          "id",
-          "title",
-          "content",
-          "userId",
-          "createdAt",
-          [
-            Sequelize.literal(`(
-                    SELECT COUNT(postId)
-                    FROM Comments  WHERE
-                     Post.id = Comments.postId
-                )`),
-            "nbComments",
-          ],
-          [
-            Sequelize.literal(`(
-                    SELECT SUM(isLike)
-                    FROM Likes  WHERE
-                     Post.id = Likes.postId
-                )`),
-            "Likes",
-          ],
-          [
-            Sequelize.literal(`(
-                    SELECT SUM(isDislike)
-                    FROM Likes  WHERE
-                     Post.id = Likes.postId
-                )`),
-            "Dislikes",
-          ],
-        ],
-        include: [
-          {
-            model: models.User,
-            as: "P_User",
-
-            attributes: ["username", "id", "avatar"],
-          },
-          {
-            model: models.Like,
-            as: "P_Likes",
-            attributes: ["isLike", "isDislike"],
-            where: { userId: userId },
-            required: false,
-          },
-        ],
-      })
-        .then((post) => res.status(201).json(post))
-        .catch((error) => res.status(400).json({ error }))
-    );
+    models.Post.create(post)
+      .then((post) => res.status(201).json(post))
+      .catch((error) => res.status(400).json({ error }));
   },
 
   getAllPost: function (req, res) {

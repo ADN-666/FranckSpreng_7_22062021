@@ -100,8 +100,6 @@ export default {
       formData.set("bio", this.bio);
       formData.append("image", this.image);
       this.$store.dispatch("signup", formData);
-
-      this.$router.push({ name: "Posts" });
     },
 
     onReset(event) {

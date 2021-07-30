@@ -1,6 +1,7 @@
 <template>
   <div class="MyPosts container">
     <b-jumbotron bg-variant="light" class="my-5">
+      <h4 v-if="this.posts == ''">Vous n'avez pas de publications pour l'instant</h4>
       <NewPost />
       <Post
         v-for="post of posts"
@@ -40,7 +41,7 @@ export default {
     this.getPosts();
   },
   beforeRouteUpdate(to, from, next) {
-    if ((this.user = this.$route.path)) {
+    if (this.user == this.$route.path) {
       next();
     }
     this.user = this.$route.path;
@@ -52,7 +53,9 @@ export default {
   methods: {
     getPosts() {
       instance
-        .get(`${this.user}`)
+        .get(`${this.user}`, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => (this.posts = response.data))
         .catch((error) => {
           error;

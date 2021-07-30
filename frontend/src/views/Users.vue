@@ -50,7 +50,9 @@ export default {
 
   beforeMount() {
     instance
-      .get("/users/all")
+      .get("/users/all", {
+        headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+      })
       .then((response) => (this.users = response.data))
 
       .catch((error) => {

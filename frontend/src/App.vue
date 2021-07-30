@@ -78,11 +78,6 @@ export default {
     ...mapState(["userInfos", "upKey"]),
   },
 
-  updated() {
-    this.$store.commit("KEYDEL");
-    console.log(this.upKey);
-  },
-
   methods: {
     ok() {
       this.showModal = false;
@@ -93,8 +88,8 @@ export default {
       this.$store.commit("USERNAME", "");
       this.$store.commit("AVATAR", "");
       this.$store.commit("POSTS", "");
-      this.$router.push({ name: "Home" });
       localStorage.removeItem("token");
+      this.$router.push({ name: "Home" });
     },
   },
 };

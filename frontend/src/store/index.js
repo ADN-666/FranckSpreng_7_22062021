@@ -57,8 +57,8 @@ export default new Vuex.Store({
     KEY(state) {
       state.upKey += 1;
     },
-    KEYDEL(state) {
-      state.upKey = 0;
+    KEYPOST(state) {
+      state.keyPost += 1;
     },
   },
   getters: {
@@ -77,6 +77,7 @@ export default new Vuex.Store({
           commit("USERNAME", response.data.username);
           commit("AVATAR", response.data.avatar);
           localStorage.setItem("token", response.data.token);
+          router.push({ name: "Posts" });
         })
         .catch((error) => {
           console.log(error);
@@ -84,7 +85,9 @@ export default new Vuex.Store({
     },
     login({ commit }, form) {
       instance
-        .post("/users/login", form)
+        .post("/users/login", form, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => {
           commit("TOKEN", response.data.token);
           commit("ISLOG", true);
@@ -112,7 +115,9 @@ export default new Vuex.Store({
     },
     newPost({ commit }, form) {
       instance
-        .post("/posts/", form)
+        .post("/posts/", form, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then(() => {
           commit("KEY");
         })

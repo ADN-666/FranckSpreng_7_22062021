@@ -103,7 +103,7 @@
           </b-form-group>
         </b-form>
         <template #modal-footer="{ cancel }">
-          <b-button modal-footer class="mr-5" variant="info" size="sm" @click="updatePost"
+          <b-button modal-footer class="mr-5" variant="info" size="sm" @click.prevent="updatePost"
             >Soumettre</b-button
           >
           <b-button modal-footer variant="danger" size="sm" @click="cancel()"> Annuler </b-button>
@@ -123,7 +123,7 @@
         </template>
       </b-modal>
     </b-card>
-    <b-form @submit="createComment">
+    <b-form @submit.prevent="createComment">
       <b-row>
         <b-col class="col-7 mx-auto"
           ><b-form-input
@@ -235,47 +235,58 @@ export default {
   },
 
   computed: {
-    ...mapState(["userInfos"]),
+    ...mapState(["userInfos", "keyPost"]),
   },
 
   methods: {
     getCom() {
-      if (this.nbComments > 0) {
+      if (this.nbComments >= 0) {
         instance
-          .get(`/posts/${this.postId}/comments/all`)
+          .get(`/posts/${this.postId}/comments/all`, {
+            headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          })
           .then((response) => (this.comments = response.data))
           .catch((error) => {
             error;
           });
       }
     },
-    updatePost(event) {
-      event.preventDefault();
+    updatePost() {
       instance
-        .put(`/posts/${this.postId}`, this.formPostUpdate)
-        .then(() => this.$store.commit("KEY"))
+        .put(`/posts/${this.postId}`, this.formPostUpdate, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => response)
         .catch((error) => {
           error;
         });
       this.updatePostShow = false;
+      this.$store.commit("KEY");
     },
     deletePost() {
       instance
-        .delete(`/posts/${this.postId}`)
-        .then(() => this.$store.commit("KEY"))
+        .delete(`/posts/${this.postId}`, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => response)
         .catch((error) => {
           error;
         });
       this.deletePostShow = false;
+      this.$store.commit("KEY");
     },
-    createComment(event) {
-      event.preventDefault();
+    createComment() {
       instance
-        .post(`/posts/${this.postId}/comments`, this.formCommentCreate)
-        .then(() => this.$store.commit("KEY"))
+        .post(`/posts/${this.postId}/comments`, this.formCommentCreate, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => {
+          this.comments = response.data;
+        })
         .catch((error) => {
           error;
         });
+      this.$store.commit("KEY");
     },
   },
 };

@@ -151,7 +151,9 @@ export default {
   methods: {
     getUser() {
       instance
-        .get(`/users/me/${this.userInfos.userId}`)
+        .get(`/users/me/${this.userInfos.userId}`, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => (this.user = response.data))
 
         .catch((error) => {
@@ -170,7 +172,9 @@ export default {
       formData.set("bio", this.user.bio);
       formData.append("image", this.image);
       instance
-        .put(`/users/me/${this.userInfos.userId}`, formData)
+        .put(`/users/me/${this.userInfos.userId}`, formData, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => {
           (this.user = response.data),
             this.$store.commit("USERNAME", response.data.username),

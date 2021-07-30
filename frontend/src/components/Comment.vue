@@ -89,7 +89,7 @@
 
 <script>
 import instance from "../axios/configAxios";
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "Comment",
@@ -135,34 +135,33 @@ export default {
   },
 
   computed: {
-    ...mapState(["userInfos", "comments"]),
-    ...mapActions(["comments"]),
+    ...mapState(["userInfos"]),
   },
 
   methods: {
     updateComment() {
       instance
-        .put(`/posts/${this.comPostId}/comments/${this.comId}`, this.formCommentUpdate)
+        .put(`/posts/${this.comPostId}/comments/${this.comId}`, this.formCommentUpdate, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => response)
         .catch((error) => {
           error;
         });
       this.updateComShow = false;
-      this.$nextTick(() => {
-        window.location.reload();
-      });
+      this.$store.commit("KEY");
     },
     deleteComment() {
       instance
-        .delete(`/posts/${this.postId}/comments/${this.comId}`)
+        .delete(`/posts/${this.comPostId}/comments/${this.comId}`, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
         .then((response) => response)
         .catch((error) => {
           error;
         });
       this.deleteComShow = false;
-      this.$nextTick(() => {
-        window.location.reload();
-      });
+      this.$store.commit("KEY");
     },
   },
 };
