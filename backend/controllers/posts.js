@@ -38,7 +38,7 @@ module.exports = {
         ],
         [
           Sequelize.literal(`(
-                    SELECT SUM(isLike)
+                    SELECT COALESCE(SUM(isLike),0) AS val
                     FROM Likes  WHERE
                      Post.id = Likes.postId
                 )`),
@@ -46,7 +46,7 @@ module.exports = {
         ],
         [
           Sequelize.literal(`(
-                    SELECT SUM(isDislike)
+                    SELECT COALESCE(SUM(isDislike),0) AS val
                     FROM Likes  WHERE
                      Post.id = Likes.postId
                 )`),
@@ -92,7 +92,7 @@ module.exports = {
         ],
         [
           Sequelize.literal(`(
-                    SELECT SUM(isLike)
+                    SELECT COALESCE(SUM(isLike),0) AS val
                     FROM Likes  WHERE
                      Post.id = Likes.postId
                 )`),
@@ -100,7 +100,7 @@ module.exports = {
         ],
         [
           Sequelize.literal(`(
-                    SELECT SUM(isDislike)
+                    SELECT COALESCE(SUM(isDislike),0) AS val
                     FROM Likes  WHERE
                      Post.id = Likes.postId
                 )`),

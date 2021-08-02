@@ -19,7 +19,7 @@ export default new Vuex.Store({
     },
     userInfos: {
       isLog: false,
-      loader: false,
+
       userId: "",
       username: "",
       avatar: "",
@@ -33,9 +33,7 @@ export default new Vuex.Store({
     ISLOG(state, payload) {
       state.userInfos.isLog = payload;
     },
-    LOADER(state, payload) {
-      state.userInfos.loader = payload;
-    },
+
     USERID(state, payload) {
       state.userInfos.userId = payload;
     },
@@ -57,8 +55,8 @@ export default new Vuex.Store({
     KEY(state) {
       state.upKey += 1;
     },
-    KEYPOST(state) {
-      state.keyPost += 1;
+    KEYDEL(state) {
+      state.upKey = 0;
     },
   },
   getters: {
@@ -85,9 +83,7 @@ export default new Vuex.Store({
     },
     login({ commit }, form) {
       instance
-        .post("/users/login", form, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
-        })
+        .post("/users/login", form)
         .then((response) => {
           commit("TOKEN", response.data.token);
           commit("ISLOG", true);

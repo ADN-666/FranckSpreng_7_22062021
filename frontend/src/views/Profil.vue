@@ -58,7 +58,7 @@
           v-model="updateProfilShow"
           @ok="onSubmit"
         >
-          <b-form>
+          <b-form enctype="multipart/form-data">
             <b-form-group id="input-group-1" label="Pseudo" label-for="input-1">
               <b-form-input
                 id="input-1"
@@ -178,12 +178,35 @@ export default {
         .then((response) => {
           (this.user = response.data),
             this.$store.commit("USERNAME", response.data.username),
+            this.$store.commit("EMAIL", response.data.email),
+            this.$store.commit("BIO", response.data.bio),
             this.$store.commit("AVATAR", response.data.avatar);
         })
         .catch((error) => {
           error;
         });
       this.updateProfilShow = false;
+    },
+    onDelete() {
+      instance
+        .delete(`/users/me/${this.userInfos.userId}`, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => {
+          response, this.$store.commit("TOKEN", "");
+          this.$store.commit("ISLOG", false);
+          this.$store.commit("USERID", "");
+          this.$store.commit("USERNAME", "");
+          this.$store.commit("AVATAR", "");
+          this.$store.commit("POSTS", "");
+          this.$store.commit("KEYDEL");
+          localStorage.removeItem("token");
+          this.$router.push({ name: "Home" });
+        })
+        .catch((error) => {
+          error;
+        });
+      this.deleteProfilShow = false;
     },
   },
 };

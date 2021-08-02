@@ -83,11 +83,11 @@ export default {
       this.showModal = false;
       this.$store.commit("TOKEN", "");
       this.$store.commit("ISLOG", false);
-      this.$store.commit("LOADER", false);
       this.$store.commit("USERID", "");
       this.$store.commit("USERNAME", "");
       this.$store.commit("AVATAR", "");
       this.$store.commit("POSTS", "");
+      this.$store.commit("KEYDEL");
       localStorage.removeItem("token");
       this.$router.push({ name: "Home" });
     },

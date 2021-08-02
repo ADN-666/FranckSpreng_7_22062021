@@ -14,8 +14,7 @@
         :nbComments="post.nbComments"
         :Likes="post.Likes"
         :Dislikes="post.Dislikes"
-        :isLike="post.P_Likes.isLike"
-        :isDislike="post.P_Likes.isDislike"
+        :P_Likes="post.P_Likes[0]"
         :username="post.P_User.username"
         :avatar="post.P_User.avatar"
       />
@@ -36,7 +35,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["posts", "userInfos"]),
+    ...mapState(["posts"]),
     ...mapActions(["allposts"]),
   },
 

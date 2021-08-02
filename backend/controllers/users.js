@@ -210,21 +210,36 @@ module.exports = {
     let username = req.body.username;
     let email = req.body.email;
     let bio = req.body.bio;
-    let image = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
-    if (req.file) {
-      models.User.findOne({
-        where: { id: userId },
-      })
-        .then((userFound) => {
-          const filename = userFound.avatar.split("/images/")[1];
-          fs.unlink(`images/${filename}`, () => {
+    models.User.findOne({
+      where: { id: userId },
+    })
+      .then((userFound) => {
+        if (req.file) {
+          if (userFound.avatar != null) {
+            const filename = userFound.avatar.split("/images/")[1];
+            fs.unlink(`images/${filename}`, () => {
+              userFound
+                .update({
+                  username: username,
+                  email: email,
+                  bio: bio,
+                  avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+                })
+                .then((userUpdate) => res.status(200).json(userUpdate))
+                .catch(() =>
+                  res.status(400).json({
+                    error: "il y a eu un problème à la suppression de l'ancienne image !",
+                  })
+                );
+            });
+          } else {
             userFound
               .update({
                 username: username,
                 email: email,
                 bio: bio,
-                avatar: image,
+                avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
               })
               .then((userUpdate) => res.status(200).json(userUpdate))
               .catch(() =>
@@ -232,23 +247,23 @@ module.exports = {
                   error: "il y a eu un problème à la suppression de l'ancienne image !",
                 })
               );
-          });
+          }
+        } else {
+          userFound
+            .update({
+              username: username,
+              email: email,
+              bio: bio,
+            })
+            .then((userUpdate) => res.status(200).json(userUpdate))
+            .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
+        }
+      })
+      .catch(() =>
+        res.status(500).json({
+          error: "il y a eu un problème de traitement !",
         })
-        .catch(() =>
-          res.status(500).json({
-            error: "il y a eu un problème de traitement !",
-          })
-        );
-    } else {
-      userFound
-        .update({
-          username: username,
-          email: email,
-          bio: bio,
-        })
-        .then((userUpdate) => res.status(200).json(userUpdate))
-        .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
-    }
+      );
   },
 
   deleteUser: function (req, res) {

@@ -4,7 +4,7 @@
       <b-row class="my-5 h2">
         <b-col><p>Accès utilisateur</p></b-col>
       </b-row>
-      <b-form @reset="onReset" v-if="show">
+      <b-form @submit="onSubmit" @reset="onReset" v-if="show">
         <b-form-group id="input-group-1" label="Email" label-for="input-1">
           <b-form-input
             id="input-1"
@@ -29,7 +29,7 @@
             required
           ></b-form-input>
         </b-form-group>
-        <b-button class="mr-5" type="submit" @click.prevent="onSubmit" variant="primary"
+        <b-button class="mr-5" type="submit" @click="onSubmit" variant="primary"
           >Soumettre</b-button
         >
         <b-button type="reset" variant="danger">Effacer</b-button>
@@ -60,7 +60,8 @@ export default {
   },
 
   methods: {
-    onSubmit() {
+    onSubmit: function (e) {
+      e.preventDefault();
       this.$store.dispatch("login", this.form);
     },
     onReset(event) {

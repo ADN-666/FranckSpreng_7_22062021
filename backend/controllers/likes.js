@@ -29,7 +29,7 @@ module.exports = {
             .then(() => res.status(201).json({ message: "Le like a bien été créé" }))
             .catch((error) => res.status(400).json({ error: "erreur à la création du like" }));
         } else {
-          if (!(newIsLike == 1 && newIsDislike == 1)) {
+          if (!(newIsLike == true && newIsDislike == true)) {
             models.Like.update(
               {
                 isLike: newIsLike,

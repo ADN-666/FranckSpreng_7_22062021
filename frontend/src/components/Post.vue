@@ -41,27 +41,28 @@
       <b-card-footer class="mt-1">
         <b-row class="align-items-center"
           ><b-col cols="3"
-            ><b-button size="sm" to="#" variant="link" class="text-dark"
-              ><b-badge variant="light" v-if="Likes != null">{{ Likes }}</b-badge>
-              <b-badge variant="light" v-else>0</b-badge>
+            ><b-button size="sm" variant="link" class="text-dark" @click="like"
+              ><b-badge variant="light">{{ Likes }}</b-badge>
+
               <b-icon
                 icon="hand-thumbs-up"
                 font-scale="2"
-                v-if="isLike == true"
-                v-model="isLike"
+                v-if="P_Likes.isLike == true"
+                variant="info"
               ></b-icon
-              ><b-icon
-                icon="hand-thumbs-up"
-                font-scale="2"
-                v-else
-                v-model="isLike"
-              ></b-icon></b-button
+              ><b-icon icon="hand-thumbs-up" font-scale="2" v-else></b-icon></b-button
           ></b-col>
           <b-col cols="3"
-            ><b-button size="sm" to="#" variant="link" class="text-dark" v-model="isDislike"
-              ><b-badge variant="light" v-if="Dislikes != null">{{ Dislikes }}</b-badge>
-              <b-badge variant="light" v-else>0</b-badge>
-              <b-icon icon="hand-thumbs-down" font-scale="2"></b-icon></b-button
+            ><b-button size="sm" variant="link" class="text-dark" @click.prevent="dislike"
+              ><b-badge variant="light">{{ Dislikes }}</b-badge>
+
+              <b-icon
+                icon="hand-thumbs-down"
+                font-scale="2"
+                v-if="P_Likes.isDislike == true"
+                variant="info"
+              ></b-icon>
+              <b-icon icon="hand-thumbs-down" v-else font-scale="2"></b-icon></b-button
           ></b-col>
 
           <b-col cols="6" class="text-right">
@@ -161,7 +162,7 @@ export default {
   props: {
     postId: {
       type: Number,
-      required: false,
+      required: true,
     },
     title: {
       type: String,
@@ -181,28 +182,20 @@ export default {
     },
     nbComments: {
       type: Number,
-      required: false,
-      default: 0,
+      required: true,
     },
     Likes: {
-      type: String,
-      required: false,
-      default: "0",
+      required: true,
     },
     Dislikes: {
-      type: String,
       required: false,
-      default: "0",
     },
-    isLike: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    isDislike: {
-      type: Boolean,
-      required: false,
-      default: false,
+
+    P_Likes: {
+      type: Object,
+      default: function () {
+        return { isLike: false, isDislike: false };
+      },
     },
     username: {
       type: String,
@@ -227,6 +220,10 @@ export default {
       formCommentCreate: {
         content: "",
       },
+      formLike: {
+        isLike: false,
+        isDislike: false,
+      },
     };
   },
 
@@ -235,7 +232,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["userInfos", "keyPost"]),
+    ...mapState(["userInfos"]),
   },
 
   methods: {
@@ -283,6 +280,38 @@ export default {
         .then((response) => {
           this.comments = response.data;
         })
+        .catch((error) => {
+          error;
+        });
+      this.$store.commit("KEY");
+    },
+    like() {
+      if (this.P_Likes.isLike == true) {
+        this.formLike.isLike = false;
+      } else {
+        this.formLike.isLike = true;
+      }
+      instance
+        .post(`/posts/${this.postId}/like`, this.formLike, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => response)
+        .catch((error) => {
+          error;
+        });
+      this.$store.commit("KEY");
+    },
+    dislike() {
+      if (this.P_Likes.isDislike == true) {
+        this.formLike.isDislike = false;
+      } else {
+        this.formLike.isDislike = true;
+      }
+      instance
+        .post(`/posts/${this.postId}/like`, this.formLike, {
+          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        })
+        .then((response) => response)
         .catch((error) => {
           error;
         });
