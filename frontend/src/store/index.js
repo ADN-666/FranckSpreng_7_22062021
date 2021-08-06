@@ -1,6 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import createPersistedState from "vuex-persistedstate";
+import SecureLS from "secure-ls";
+const ls = new SecureLS({ isCompression: false });
 import instance from "../axios/configAxios";
 import router from "../router/index";
 
@@ -9,17 +11,12 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     posts: [],
+    comments: [],
     upKey: 0,
 
-    like: {
-      userId: "",
-      postId: "",
-      isLike: "",
-      isDislike: "",
-    },
     userInfos: {
       isLog: false,
-
+      isAdmin: false,
       userId: "",
       username: "",
       avatar: "",
@@ -30,27 +27,26 @@ export default new Vuex.Store({
     TOKEN(state, payload) {
       state.userInfos.token = payload;
     },
-    ISLOG(state, payload) {
-      state.userInfos.isLog = payload;
+    ISLOG(state, value) {
+      value ? (state.userInfos.isLog = value) : (state.userInfos.isLog = "");
     },
-
-    USERID(state, payload) {
-      state.userInfos.userId = payload;
+    ISADMIN(state, value) {
+      value ? (state.userInfos.isAdmin = value) : (state.userInfos.isAdmin = "");
     },
-    USERNAME(state, payload) {
-      state.userInfos.username = payload;
+    USERID(state, value) {
+      value ? (state.userInfos.userId = value) : (state.userInfos.userId = "");
     },
-    AVATAR(state, payload) {
-      state.userInfos.avatar = payload;
+    USERNAME(state, value) {
+      value ? (state.userInfos.username = value) : (state.userInfos.username = "");
+    },
+    AVATAR(state, value) {
+      value ? (state.userInfos.avatar = value) : (state.userInfos.avatar = "");
     },
     POSTS(state, payload) {
       state.posts = payload;
     },
     COMMENTS(state, payload) {
       state.comments = payload;
-    },
-    NEWPOST(state, payload) {
-      state.posts = payload;
     },
     KEY(state) {
       state.upKey += 1;
@@ -59,11 +55,7 @@ export default new Vuex.Store({
       state.upKey = 0;
     },
   },
-  getters: {
-    getToken: (state) => {
-      return state.userInfos.token;
-    },
-  },
+
   actions: {
     signup({ commit }, formData) {
       instance
@@ -71,10 +63,11 @@ export default new Vuex.Store({
         .then((response) => {
           commit("TOKEN", response.data.token);
           commit("ISLOG", true);
+          commit("ISADMIN", response.data.isAdmin);
           commit("USERID", response.data.userId);
           commit("USERNAME", response.data.username);
           commit("AVATAR", response.data.avatar);
-          localStorage.setItem("token", response.data.token);
+          //localStorage.setItem("token", response.data.token);
           router.push({ name: "Posts" });
         })
         .catch((error) => {
@@ -87,20 +80,21 @@ export default new Vuex.Store({
         .then((response) => {
           commit("TOKEN", response.data.token);
           commit("ISLOG", true);
+          commit("ISADMIN", response.data.isAdmin);
           commit("USERID", response.data.userId);
           commit("USERNAME", response.data.username);
           commit("AVATAR", response.data.avatar);
-          localStorage.setItem("token", response.data.token);
+          //localStorage.setItem("token", response.data.token);
           router.push({ name: "Posts" });
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    allposts({ commit }) {
+    allPosts({ commit }) {
       instance
         .get("/posts/all", {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.state.userInfos.token}` },
         })
         .then((response) => {
           commit("POSTS", response.data);
@@ -109,13 +103,13 @@ export default new Vuex.Store({
           error;
         });
     },
-    newPost({ commit }, form) {
+    allComs({ commit }) {
       instance
-        .post("/posts/", form, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        .get(`/posts/comments/all`, {
+          headers: { Authorization: `bearer ${this.state.userInfos.token}` },
         })
-        .then(() => {
-          commit("KEY");
+        .then((response) => {
+          commit("COMMENTS", response.data);
         })
         .catch((error) => {
           error;
@@ -123,5 +117,14 @@ export default new Vuex.Store({
     },
   },
 
-  plugins: [createPersistedState()],
+  plugins: [
+    createPersistedState({
+      storage: {
+        getItem: (key) => ls.get(key),
+        setItem: (key, value) => ls.set(key, value),
+        removeItem: (key) => ls.remove(key),
+      },
+      paths: ["userInfos"],
+    }),
+  ],
 });

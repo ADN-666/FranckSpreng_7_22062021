@@ -19,7 +19,7 @@ module.exports = {
 
   getAllComments: function (req, res) {
     models.Comment.findAll({
-      where: { postId: req.params.postId },
+      order: [["id", "DESC"]],
       include: {
         model: models.User,
         as: "C_User",
@@ -46,13 +46,14 @@ module.exports = {
   updateComment: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
+    const isAdmin = jwtUtils.getIsAdmin(headerAuth);
     let content = req.body.content;
 
     models.Comment.findOne({
       where: { id: req.params.id },
     })
       .then((comUpdate) => {
-        if (comUpdate.userId == userId) {
+        if (comUpdate.userId == userId || isAdmin == true) {
           comUpdate.update({
             content: content,
           });
@@ -67,11 +68,12 @@ module.exports = {
   deleteComment: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
+    const isAdmin = jwtUtils.getIsAdmin(headerAuth);
     models.Comment.findOne({
       where: { id: req.params.id },
     })
       .then((comment) => {
-        if (comment.userId == userId) {
+        if (comment.userId == userId || isAdmin == true) {
           models.Comment.destroy({
             where: { id: comment.id },
           });

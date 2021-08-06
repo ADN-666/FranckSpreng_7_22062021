@@ -20,4 +20,17 @@ module.exports = {
     }
     return userId;
   },
+  getIsAdmin: function (authorization) {
+    let isAdmin = false;
+    let token = module.exports.parseAuthorization(authorization);
+    if (token != null) {
+      try {
+        let jwtToken = jwt.verify(token, JWT_SIGN_SECRET);
+        if (jwtToken != null) {
+          isAdmin = jwtToken.isAdmin;
+        }
+      } catch (err) {}
+    }
+    return isAdmin;
+  },
 };

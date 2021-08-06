@@ -9,7 +9,7 @@ module.exports = {
         password: "$2b$10$ZelA/NqEC87sBaA4IR.KrutlaiDcc2Z7bEPicVzpjWI07uWp5TIhy",
         bio: "Bonjour je m'appelle Simba, j'ai 17 ans et je suis un chat.",
         avatar: null,
-        isAdmin: "0",
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

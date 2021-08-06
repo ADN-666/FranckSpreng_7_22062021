@@ -33,16 +33,21 @@ module.exports = {
                 password: hash,
                 bio: bio,
                 avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-                isAdmin: 0,
+                isAdmin: false,
               })
                 .then((newUser) => {
                   return res.status(201).json({
-                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
-                      expiresIn: "24h",
-                    }),
+                    token: jwt.sign(
+                      { userId: newUser.id, isAdmin: newUser.isAdmin },
+                      "doudou21steph29",
+                      {
+                        expiresIn: "24h",
+                      }
+                    ),
                     avatar: newUser.avatar,
                     username: newUser.username,
                     userId: newUser.id,
+                    isAdmin: newUser.isAdmin,
                   });
                 })
                 .catch((error) =>
@@ -57,16 +62,21 @@ module.exports = {
                 password: hash,
                 bio: bio,
                 avatar: null,
-                isAdmin: 0,
+                isAdmin: false,
               })
                 .then(function (newUser) {
                   return res.status(201).json({
-                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
-                      expiresIn: "24h",
-                    }),
+                    token: jwt.sign(
+                      { userId: newUser.id, isAdmin: newUser.isAdmin },
+                      "doudou21steph29",
+                      {
+                        expiresIn: "24h",
+                      }
+                    ),
                     avatar: newUser.avatar,
                     username: newUser.username,
                     userId: newUser.id,
+                    isAdmin: newUser.isAdmin,
                   });
                 })
                 .catch((error) =>
@@ -92,7 +102,7 @@ module.exports = {
     }
 
     models.User.findOne({
-      attributes: ["id", "password", "username", "avatar"],
+      attributes: ["id", "password", "username", "avatar", "isAdmin"],
       where: { email: email },
     })
       .then((userFound) => {
@@ -106,12 +116,17 @@ module.exports = {
               return res.status(401).json({ error: "Mot de passe incorrect !" });
             }
             res.status(200).json({
-              token: jwt.sign({ userId: userFound.id }, "doudou21steph29", {
-                expiresIn: "24h",
-              }),
+              token: jwt.sign(
+                { userId: userFound.id, isAdmin: userFound.isAdmin },
+                "doudou21steph29",
+                {
+                  expiresIn: "24h",
+                }
+              ),
               avatar: userFound.avatar,
               username: userFound.username,
               userId: userFound.id,
+              isAdmin: userFound.isAdmin,
             });
           })
           .catch((error) => res.status(500).json({ error }));
@@ -121,6 +136,7 @@ module.exports = {
 
   getAllUsers: function (req, res) {
     models.User.findAll({
+      order: [["username", "ASC"]],
       attributes: [
         "id",
         "username",
@@ -138,43 +154,6 @@ module.exports = {
     })
       .then((user) => res.status(200).json(user))
       .catch((error) => res.status(500).json({ error }));
-  },
-
-  getOneUser: function (req, res) {
-    models.User.findOne({
-      group: "U_Posts.id",
-      attributes: ["username", "bio", "avatar"],
-      where: { id: req.params.id },
-      include: {
-        model: models.Post,
-        as: "U_Posts",
-        attributes: [
-          "id",
-          "title",
-          "content",
-          [
-            Sequelize.literal(`(
-                    SELECT COUNT(postId)
-                    FROM Comments  WHERE
-                     U_Posts.id = Comments.postId
-                )`),
-            "nbComments",
-          ],
-        ],
-        include: [
-          {
-            model: models.Like,
-            as: "P_Likes",
-            attributes: [
-              [Sequelize.fn("SUM", Sequelize.col("isLike")), "Likes"],
-              [Sequelize.fn("SUM", Sequelize.col("isDislike")), "Dislikes"],
-            ],
-          },
-        ],
-      },
-    })
-      .then((userFound) => res.status(200).json(userFound))
-      .catch((error) => res.status(404).json({ error }));
   },
 
   getUserProfile: function (req, res) {
@@ -241,7 +220,7 @@ module.exports = {
                 bio: bio,
                 avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
               })
-              .then((userUpdate) => res.status(200).json(userUpdate))
+              .then((userUpdate) => res.status(201).json(userUpdate))
               .catch(() =>
                 res.status(400).json({
                   error: "il y a eu un problème à la suppression de l'ancienne image !",
@@ -249,14 +228,32 @@ module.exports = {
               );
           }
         } else {
-          userFound
-            .update({
-              username: username,
-              email: email,
-              bio: bio,
-            })
-            .then((userUpdate) => res.status(200).json(userUpdate))
-            .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
+          if (userFound.avatar != null) {
+            const filename = userFound.avatar.split("/images/")[1];
+            fs.unlink(`images/${filename}`, () => {
+              userFound
+                .update({
+                  username: username,
+                  email: email,
+                  bio: bio,
+                  avatar: null,
+                })
+                .then((userUpdate) => res.status(202).json(userUpdate))
+                .catch(() =>
+                  res.status(500).json({ error: " Le profil n'a pas été mis à jour  " })
+                );
+            });
+          } else {
+            userFound
+              .update({
+                username: username,
+                email: email,
+                bio: bio,
+                avatar: null,
+              })
+              .then((userUpdate) => res.status(203).json(userUpdate))
+              .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
+          }
         }
       })
       .catch(() =>
@@ -301,5 +298,44 @@ module.exports = {
         }
       })
       .catch((error) => res.status(500).json({ error: "Aucun utilisateur correspondant" }));
+  },
+
+  // a supprimer
+
+  getOneUser: function (req, res) {
+    models.User.findOne({
+      group: "U_Posts.id",
+      attributes: ["username", "bio", "avatar"],
+      where: { id: req.params.id },
+      include: {
+        model: models.Post,
+        as: "U_Posts",
+        attributes: [
+          "id",
+          "title",
+          "content",
+          [
+            Sequelize.literal(`(
+                    SELECT COUNT(postId)
+                    FROM Comments  WHERE
+                     U_Posts.id = Comments.postId
+                )`),
+            "nbComments",
+          ],
+        ],
+        include: [
+          {
+            model: models.Like,
+            as: "P_Likes",
+            attributes: [
+              [Sequelize.fn("SUM", Sequelize.col("isLike")), "Likes"],
+              [Sequelize.fn("SUM", Sequelize.col("isDislike")), "Dislikes"],
+            ],
+          },
+        ],
+      },
+    })
+      .then((userFound) => res.status(200).json(userFound))
+      .catch((error) => res.status(404).json({ error }));
   },
 };

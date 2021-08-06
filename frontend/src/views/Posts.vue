@@ -36,11 +36,12 @@ export default {
 
   computed: {
     ...mapState(["posts"]),
-    ...mapActions(["allposts"]),
+    ...mapActions(["allPosts", "allComs"]),
   },
 
   mounted() {
-    this.$store.dispatch("allposts");
+    this.$store.dispatch("allPosts");
+    this.$store.dispatch("allComs");
   },
 
   methods: {},

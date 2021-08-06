@@ -46,7 +46,7 @@
         </b-collapse>
       </b-navbar>
     </header>
-    <router-view :key="$route.fullPath" />
+    <router-view />
 
     <footer>
       <b-navbar type="light" variant="light">
@@ -76,6 +76,10 @@ export default {
 
   computed: {
     ...mapState(["userInfos", "upKey"]),
+  },
+
+  updated() {
+    console.log(this.upKey);
   },
 
   methods: {

@@ -6,10 +6,10 @@
           <b-col cols="10">
             <b-avatar variant="info" :src="avatar"></b-avatar>
 
-            {{ username }} - publié il y a {{ createdAt }} </b-col
+            {{ username }} - publié il y a {{ date(createdAt) }} </b-col
           ><b-col cols="2"
             ><b-dropdown
-              v-if="userId == userInfos.userId"
+              v-if="userId == userInfos.userId || userInfos.isAdmin == true"
               size="sm"
               variant="link"
               toggle-class="text-decoration-none text-dark"
@@ -138,7 +138,7 @@
       </b-row>
     </b-form>
     <Comment
-      v-for="com in comments"
+      v-for="com in filteredComments"
       :key="com.id"
       :comId="com.id"
       :content="com.content"
@@ -152,6 +152,7 @@
 </template>
 
 <script>
+import moment from "moment";
 import Comment from "@/components/Comment";
 import instance from "../axios/configAxios";
 import { mapState } from "vuex";
@@ -185,9 +186,11 @@ export default {
       required: true,
     },
     Likes: {
+      type: String,
       required: true,
     },
     Dislikes: {
+      type: String,
       required: false,
     },
 
@@ -211,15 +214,16 @@ export default {
     return {
       updatePostShow: false,
       deletePostShow: false,
-      comments: [],
 
       formPostUpdate: {
         title: this.title,
         content: this.content,
       },
+
       formCommentCreate: {
         content: "",
       },
+
       formLike: {
         isLike: false,
         isDislike: false,
@@ -227,63 +231,51 @@ export default {
     };
   },
 
-  mounted() {
-    this.getCom();
-  },
-
   computed: {
-    ...mapState(["userInfos"]),
+    ...mapState(["userInfos", "comments"]),
+    filteredComments() {
+      return this.comments.filter((com) => com.postId == this.postId);
+    },
   },
 
   methods: {
-    getCom() {
-      if (this.nbComments >= 0) {
-        instance
-          .get(`/posts/${this.postId}/comments/all`, {
-            headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
-          })
-          .then((response) => (this.comments = response.data))
-          .catch((error) => {
-            error;
-          });
-      }
-    },
     updatePost() {
       instance
         .put(`/posts/${this.postId}`, this.formPostUpdate, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => {
+          this.updatePostShow = false;
+          this.$store.commit("KEY");
+        })
         .catch((error) => {
           error;
         });
-      this.updatePostShow = false;
-      this.$store.commit("KEY");
     },
     deletePost() {
       instance
         .delete(`/posts/${this.postId}`, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => {
+          this.deletePostShow = false;
+          this.$store.commit("KEY");
+        })
         .catch((error) => {
           error;
         });
-      this.deletePostShow = false;
-      this.$store.commit("KEY");
     },
     createComment() {
       instance
         .post(`/posts/${this.postId}/comments`, this.formCommentCreate, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => {
-          this.comments = response.data;
+        .then(() => {
+          this.$store.commit("KEY");
         })
         .catch((error) => {
           error;
         });
-      this.$store.commit("KEY");
     },
     like() {
       if (this.P_Likes.isLike == true) {
@@ -293,13 +285,12 @@ export default {
       }
       instance
         .post(`/posts/${this.postId}/like`, this.formLike, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => this.$store.commit("KEY"))
         .catch((error) => {
           error;
         });
-      this.$store.commit("KEY");
     },
     dislike() {
       if (this.P_Likes.isDislike == true) {
@@ -309,13 +300,38 @@ export default {
       }
       instance
         .post(`/posts/${this.postId}/like`, this.formLike, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => this.$store.commit("KEY"))
         .catch((error) => {
           error;
         });
-      this.$store.commit("KEY");
+    },
+
+    date(createdAt) {
+      let timestamp = Date.parse(createdAt);
+      let localDate = new Date(timestamp);
+      moment.updateLocale("en", {
+        relativeTime: {
+          future: "in %s",
+          past: "%s",
+          s: "une seconde",
+          ss: "%d secondes",
+          m: "minute",
+          mm: "%d minutes",
+          h: "une heure",
+          hh: "%d heures",
+          d: "un jour",
+          dd: "%d jours",
+          w: "une semaine",
+          ww: "%d semaines",
+          M: "un mois",
+          MM: "%d mois",
+          y: "une année",
+          yy: "%d années",
+        },
+      });
+      return moment(localDate).fromNow();
     },
   },
 };

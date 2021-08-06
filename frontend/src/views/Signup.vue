@@ -59,7 +59,8 @@
           ></b-form-file>
         </b-form-group>
         <b-button class="mr-5" type="submit" variant="primary">Soumettre</b-button>
-        <b-button type="reset" variant="danger">Effacer</b-button>
+        <b-button class="mr-5" type="reset" variant="danger">Effacer</b-button>
+        <b-button type="button" @click.prevent="onCancel" variant="danger">Annuler</b-button>
       </b-form>
     </b-jumbotron>
   </div>
@@ -104,17 +105,18 @@ export default {
 
     onReset(event) {
       event.preventDefault();
-      // Reset our form values
       this.username = "";
       this.email = "";
       this.password = "";
       this.bio = "";
       this.image = "";
-      // Trick to reset/clear native browser form validation state
       this.show = false;
       this.$nextTick(() => {
         this.show = true;
       });
+    },
+    onCancel() {
+      this.$router.push({ name: "Home" });
     },
   },
 };

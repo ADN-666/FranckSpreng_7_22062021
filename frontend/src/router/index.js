@@ -7,6 +7,7 @@ import Posts from "../views/Posts";
 import MyPosts from "../views/MyPosts";
 import Profil from "../views/Profil";
 import Users from "../views/Users";
+import store from "../store/index";
 
 Vue.use(VueRouter);
 
@@ -15,6 +16,9 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home,
+    beforeEnter: (to, from, next) => {
+      store.state.userInfos.isLog == true ? next({ name: "Posts" }) : next();
+    },
   },
   {
     path: "/signup",
@@ -42,7 +46,7 @@ const routes = [
     name: "Posts",
     component: Posts,
     beforeEnter: (to, from, next) => {
-      localStorage.getItem("token") ? next() : next({ name: "Home" });
+      store.state.userInfos.token ? next() : next({ name: "Home" });
     },
   },
   {

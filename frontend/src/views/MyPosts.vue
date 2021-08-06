@@ -25,6 +25,7 @@
 import NewPost from "@/components/NewPost";
 import Post from "@/components/Post";
 import instance from "../axios/configAxios";
+import { mapState } from "vuex";
 
 export default {
   name: "MyPosts",
@@ -50,11 +51,15 @@ export default {
     next();
   },
 
+  computed: {
+    ...mapState(["userInfos"]),
+  },
+
   methods: {
     getPosts() {
       instance
         .get(`${this.user}`, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => (this.posts = response.data))
         .catch((error) => {

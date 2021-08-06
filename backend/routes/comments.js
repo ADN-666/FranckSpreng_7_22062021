@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 const commentsCtrl = require("../controllers/comments");
 
 router.post("/:postId/comments", auth, commentsCtrl.createComment);
-router.get("/:postId/comments/all", auth, commentsCtrl.getAllComments);
+router.get("/comments/all", auth, commentsCtrl.getAllComments);
 router.get("/:postId/comments/:id", auth, commentsCtrl.getOneComment);
 router.put("/:postid/comments/:id", auth, commentsCtrl.updateComment);
 router.delete("/:postid/comments/:id", auth, commentsCtrl.deleteComment);

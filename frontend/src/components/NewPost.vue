@@ -59,7 +59,8 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
+import instance from "../axios/configAxios";
 
 export default {
   name: "NewPost",
@@ -79,19 +80,25 @@ export default {
 
   computed: {
     ...mapState(["userInfos"]),
-    ...mapActions(["newPost"]),
   },
 
   methods: {
     onSubmit() {
-      this.$store.dispatch("newPost", this.form);
+      instance
+        .post("/posts/", this.form, {
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
+        })
+        .then(() => {
+          this.$store.commit("KEY");
+        })
+        .catch((error) => {
+          error;
+        });
     },
     onReset(event) {
       event.preventDefault();
-      // Reset our form values
       this.form.title = "";
       this.form.content = "";
-      // Trick to reset/clear native browser form validation state
       this.show = false;
       this.$nextTick(() => {
         this.show = true;

@@ -22,6 +22,7 @@ module.exports = {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
     models.Post.findAll({
+      order: [["id", "DESC"]],
       attributes: [
         "id",
         "title",
@@ -75,6 +76,7 @@ module.exports = {
 
   getUserPost: function (req, res) {
     models.Post.findAll({
+      order: [["id", "DESC"]],
       where: { userId: req.params.userId },
       attributes: [
         "id",
@@ -121,6 +123,7 @@ module.exports = {
   updatePost: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
+    const isAdmin = jwtUtils.getIsAdmin(headerAuth);
 
     let title = req.body.title;
     let content = req.body.content;
@@ -129,7 +132,7 @@ module.exports = {
       where: { id: req.params.id },
     })
       .then((postUpdate) => {
-        if (postUpdate.userId == userId) {
+        if (postUpdate.userId == userId || isAdmin == true) {
           postUpdate.update({
             title: title,
             content: content,
@@ -145,11 +148,12 @@ module.exports = {
   deletePost: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
+    const isAdmin = jwtUtils.getIsAdmin(headerAuth);
     models.Post.findOne({
       where: { id: req.params.id },
     })
       .then((post) => {
-        if (post.userId == userId) {
+        if (post.userId == userId || isAdmin == true) {
           models.Post.destroy({
             where: { id: post.id },
           })

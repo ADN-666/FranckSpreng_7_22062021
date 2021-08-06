@@ -49,14 +49,13 @@
               </h4></b-col
             >
           </b-row>
-          Inscrit depuis le : {{ user.createdAt }}
+          Inscrit depuis le : {{ localDate(user.createdAt) }}
         </b-card-footer>
         <b-modal
           id="modal-updateProfil"
           centered
           title="Modifier votre profil"
           v-model="updateProfilShow"
-          @ok="onSubmit"
         >
           <b-form enctype="multipart/form-data">
             <b-form-group id="input-group-1" label="Pseudo" label-for="input-1">
@@ -76,7 +75,7 @@
                 required
               ></b-form-input>
             </b-form-group>
-            <b-form-group id="input-group-3" label="Bio" label-for="input-4">
+            <b-form-group id="input-group-3" label="Bio" label-for="input-3">
               <b-form-input
                 id="input-3"
                 v-model="user.bio"
@@ -84,8 +83,11 @@
                 placeholder="Entrez une courte description de vous"
               ></b-form-input>
             </b-form-group>
-            <b-form-group id="input-group-4" label="Avatar" label-for="input-4">
+            <b-form-group id="input-group-4" label="Avatar" label-for="image">
               <b-form-file id="image" class="text-left" @change="upload"></b-form-file>
+              <b-button class="mr-5" type="reset" variant="info" size="sm" @click="reset"
+                >Supprimer l'avatar</b-button
+              >
             </b-form-group>
           </b-form>
           <template #modal-footer="{ cancel }">
@@ -130,13 +132,14 @@ export default {
       deleteProfilShow: false,
 
       user: {
-        username: "",
-        email: "",
-        bio: "",
         avatar: "",
+        bio: "",
+        createdAt: "",
+        email: "",
+        nbPosts: "",
+        username: "",
       },
-
-      image: "",
+      image: null,
     };
   },
 
@@ -152,10 +155,9 @@ export default {
     getUser() {
       instance
         .get(`/users/me/${this.userInfos.userId}`, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => (this.user = response.data))
-
         .catch((error) => {
           error;
         });
@@ -170,16 +172,16 @@ export default {
       formData.set("username", this.user.username);
       formData.set("email", this.user.email);
       formData.set("bio", this.user.bio);
-      formData.append("image", this.image);
+      if (this.image != null) {
+        formData.append("image", this.image);
+      }
       instance
         .put(`/users/me/${this.userInfos.userId}`, formData, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => {
           (this.user = response.data),
             this.$store.commit("USERNAME", response.data.username),
-            this.$store.commit("EMAIL", response.data.email),
-            this.$store.commit("BIO", response.data.bio),
             this.$store.commit("AVATAR", response.data.avatar);
         })
         .catch((error) => {
@@ -187,10 +189,17 @@ export default {
         });
       this.updateProfilShow = false;
     },
+
+    reset(event) {
+      event.preventDefault();
+      this.image = null;
+      console.log(this.avatar);
+    },
+
     onDelete() {
       instance
         .delete(`/users/me/${this.userInfos.userId}`, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => {
           response, this.$store.commit("TOKEN", "");
@@ -200,13 +209,18 @@ export default {
           this.$store.commit("AVATAR", "");
           this.$store.commit("POSTS", "");
           this.$store.commit("KEYDEL");
-          localStorage.removeItem("token");
           this.$router.push({ name: "Home" });
         })
         .catch((error) => {
           error;
         });
       this.deleteProfilShow = false;
+    },
+    localDate(createdAt) {
+      let timestamp = Date.parse(createdAt);
+      let local = new Date(timestamp);
+      let date = local.toLocaleDateString();
+      return date;
     },
   },
 };

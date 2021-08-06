@@ -32,7 +32,8 @@
         <b-button class="mr-5" type="submit" @click="onSubmit" variant="primary"
           >Soumettre</b-button
         >
-        <b-button type="reset" variant="danger">Effacer</b-button>
+        <b-button class="mr-5" type="reset" variant="danger">Effacer</b-button>
+        <b-button type="button" @click.prevent="onCancel" variant="danger">Annuler</b-button>
       </b-form>
     </b-jumbotron>
   </div>
@@ -74,6 +75,9 @@ export default {
       this.$nextTick(() => {
         this.show = true;
       });
+    },
+    onCancel() {
+      this.$router.push({ name: "Home" });
     },
   },
 };

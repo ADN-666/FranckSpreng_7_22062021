@@ -1,16 +1,15 @@
 <template>
   <div class="my-2">
-    <!-- Elements to collapse -->
     <b-collapse :id="'collapse' + comPostId" class="mt-3">
       <b-card no-body style="max-width: 35rem" class="mx-auto mb-2">
         <template #header>
           <b-row class="mb-0 text-left">
             <b-col cols="10">
               <b-avatar variant="info" :src="avatar"></b-avatar>
-              {{ username }} - publié il y a {{ createdAt }} </b-col
+              {{ username }} - publié il y a {{ date(createdAt) }} </b-col
             ><b-col cols="2">
               <b-dropdown
-                v-if="comUserId == userInfos.userId"
+                v-if="comUserId == userInfos.userId || userInfos.isAdmin == true"
                 size="sm"
                 variant="link"
                 toggle-class="text-decoration-none text-dark"
@@ -88,6 +87,7 @@
 </template>
 
 <script>
+import moment from "moment";
 import instance from "../axios/configAxios";
 import { mapState } from "vuex";
 
@@ -142,7 +142,7 @@ export default {
     updateComment() {
       instance
         .put(`/posts/${this.comPostId}/comments/${this.comId}`, this.formCommentUpdate, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => response)
         .catch((error) => {
@@ -154,7 +154,7 @@ export default {
     deleteComment() {
       instance
         .delete(`/posts/${this.comPostId}/comments/${this.comId}`, {
-          headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
         .then((response) => response)
         .catch((error) => {
@@ -162,6 +162,31 @@ export default {
         });
       this.deleteComShow = false;
       this.$store.commit("KEY");
+    },
+    date(createdAt) {
+      let timestamp = Date.parse(createdAt);
+      let localDate = new Date(timestamp);
+      moment.updateLocale("en", {
+        relativeTime: {
+          future: "in %s",
+          past: "%s",
+          s: "une seconde",
+          ss: "%d secondes",
+          m: "une minute",
+          mm: "%d minutes",
+          h: "une heure",
+          hh: "%d heures",
+          d: "un jour",
+          dd: "%d jours",
+          w: "une semaine",
+          ww: "%d semaines",
+          M: "un mois",
+          MM: "%d mois",
+          y: "une année",
+          yy: "%d années",
+        },
+      });
+      return moment(localDate).fromNow();
     },
   },
 };

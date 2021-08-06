@@ -36,6 +36,7 @@
 </template>
 <script>
 import instance from "../axios/configAxios";
+import { mapState } from "vuex";
 
 export default {
   name: "Users",
@@ -48,10 +49,14 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState(["userInfos"]),
+  },
+
   beforeMount() {
     instance
       .get("/users/all", {
-        headers: { Authorization: `bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `bearer ${this.userInfos.token}` },
       })
       .then((response) => (this.users = response.data))
 
