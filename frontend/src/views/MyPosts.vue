@@ -4,7 +4,7 @@
       <h4 v-if="this.posts == ''">Vous n'avez pas de publications pour l'instant</h4>
       <NewPost />
       <Post
-        v-for="post of posts"
+        v-for="post of postPagin"
         :postId="post.id"
         :title="post.title"
         :content="post.content"
@@ -18,6 +18,18 @@
         :key="post.id"
       />
     </b-jumbotron>
+    <b-pagination
+      v-if="rows > 2"
+      class="mb-5 text-info"
+      v-model="currentPage"
+      :total-rows="rows"
+      :per-page="perPage"
+      aria-controls="post"
+      hide-goto-end-buttons
+      align="center"
+      pills
+      page-class="dark"
+    ></b-pagination>
   </div>
 </template>
 
@@ -34,6 +46,8 @@ export default {
     return {
       posts: [],
       user: "",
+      perPage: 2,
+      currentPage: 1,
     };
   },
 
@@ -53,6 +67,15 @@ export default {
 
   computed: {
     ...mapState(["userInfos"]),
+    postPagin() {
+      return this.posts.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      );
+    },
+    rows() {
+      return this.posts.length;
+    },
   },
 
   methods: {
