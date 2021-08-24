@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-card no-body style="max-width: 40rem" class="mx-auto">
+    <b-card id="post" no-body style="max-width: 40rem" class="mx-auto" bg-variant="light">
       <template #header>
         <b-row class="mb-0 text-left">
           <b-col cols="10">
@@ -36,13 +36,23 @@
       </template>
       <b-card-body>
         <b-card-title>{{ title }}</b-card-title>
+        <b-card-img
+          v-b-modal="'modal-img' + postId"
+          ref="img"
+          @click="imgShow = true"
+          v-if="imageUrl != null"
+          :src="imageUrl"
+          alt="Image"
+          style="max-width: 20%"
+        >
+        </b-card-img>
         <b-card-text> {{ content }} </b-card-text>
       </b-card-body>
       <b-card-footer class="mt-1">
         <b-row class="align-items-center"
           ><b-col cols="3"
             ><b-button size="sm" variant="link" class="text-dark" @click="like"
-              ><b-badge variant="light">{{ Likes }}</b-badge>
+              ><b-badge variant="white">{{ Likes }}</b-badge>
 
               <b-icon
                 icon="hand-thumbs-up"
@@ -54,7 +64,7 @@
           ></b-col>
           <b-col cols="3"
             ><b-button size="sm" variant="link" class="text-dark" @click.prevent="dislike"
-              ><b-badge variant="light">{{ Dislikes }}</b-badge>
+              ><b-badge variant="white">{{ Dislikes }}</b-badge>
 
               <b-icon
                 icon="hand-thumbs-down"
@@ -67,7 +77,9 @@
 
           <b-col cols="6" class="text-right">
             <b-button v-b-toggle="'collapse' + postId"
-              ><b-badge variant="light">{{ nbComments }}</b-badge> Commentaires</b-button
+              ><b-badge class="mr-1" variant="light">{{ nbComments }}</b-badge
+              ><span v-if="nbComments < 2">Commentaire</span
+              ><span v-else>Commentaires</span></b-button
             ></b-col
           ></b-row
         >
@@ -79,32 +91,56 @@
         title="Modifier votre publication"
         v-model="updatePostShow"
       >
-        <b-form>
-          <b-form-group id="input-group-1" label="Titre" label-for="input-1" class="text-dark">
+        <b-form @reset="reset">
+          <b-form-group
+            id="group-post-title"
+            label="Titre"
+            label-for="input-post-title"
+            class="text-dark"
+          >
             <b-form-input
-              id="input-1"
+              id="input-post-title"
               v-model="formPostUpdate.title"
               type="text"
               class="rounded-0"
             ></b-form-input>
+            <b-form-invalid-feedback :state="validTitle">
+              La publication doit comporter un titre !!
+            </b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validTitle"> Parfait !!. </b-form-valid-feedback>
           </b-form-group>
           <b-form-group
-            id="input-group-2"
+            id="group-post-content"
             label="Publication"
-            label-for="input-2"
+            label-for="input-post-content"
             class="text-dark"
           >
             <b-form-textarea
-              id="input-2"
+              id="input-post-content"
               v-model="formPostUpdate.content"
               rows="6"
               max-rows="15"
               class="rounded-0"
             ></b-form-textarea>
+            <b-form-invalid-feedback :state="validContent">
+              La publication doit comporter un contenu !!
+            </b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validContent"> Parfait !!. </b-form-valid-feedback>
+          </b-form-group>
+          <b-form-group
+            id="group-post-image"
+            :label="`image: ${this.formPostUpdate.imageUpdate}`"
+            label-for="input-post-image"
+            class="text-dark"
+          >
+            <b-button class="mb-2" type="reset" variant="info" size="sm" @click="reset"
+              >Supprimer l'image</b-button
+            >
+            <b-form-file id="input-post-image" class="text-left" @change="upload"></b-form-file>
           </b-form-group>
         </b-form>
         <template #modal-footer="{ cancel }">
-          <b-button modal-footer class="mr-5" variant="info" size="sm" @click.prevent="updatePost"
+          <b-button modal-footer class="mr-5" variant="info" size="sm" @click="updatePost"
             >Soumettre</b-button
           >
           <b-button modal-footer variant="danger" size="sm" @click="cancel()"> Annuler </b-button>
@@ -123,15 +159,21 @@
           <b-button modal-footer size="sm" variant="outline-danger" @click="cancel()">NON</b-button>
         </template>
       </b-modal>
+      <b-modal :id="'modal-img' + postId" ref="img" centered v-model="imgShow">
+        <b-img :src="imageUrl" fluid></b-img>
+        <template #modal-footer="{ ok }">
+          <b-button modal-footer size="sm" variant="info" @click="ok()">ok</b-button>
+        </template>
+      </b-modal>
     </b-card>
     <b-form @submit.prevent="createComment">
       <b-row>
         <b-col class="col-7 mx-auto"
           ><b-form-input
-            id="input-1"
+            id="input-comment"
             v-model="formCommentCreate.content"
             type="text"
-            class="rounded-pill mx-auto my-2"
+            class="rounded-pill mx-auto my-2 border-dark text-white"
             placeholder="Commenter cette publication..."
           ></b-form-input
         ></b-col>
@@ -208,16 +250,23 @@ export default {
       type: String,
       required: false,
     },
+    imageUrl: {
+      type: String,
+      required: false,
+    },
   },
 
   data() {
     return {
       updatePostShow: false,
       deletePostShow: false,
+      imgShow: false,
+      show: false,
 
       formPostUpdate: {
         title: this.title,
         content: this.content,
+        imageUpdate: this.imageUrl,
       },
 
       formCommentCreate: {
@@ -231,26 +280,60 @@ export default {
     };
   },
 
+  mounted() {
+    setTimeout(() => {
+      (this.formPostUpdate.title = this.title),
+        (this.formPostUpdate.content = this.content),
+        (this.formPostUpdate.imageUpdate = this.imageUrl);
+    }, 500);
+  },
+
   computed: {
     ...mapState(["userInfos", "comments"]),
+
     filteredComments() {
       return this.comments.filter((com) => com.postId == this.postId);
+    },
+    validTitle() {
+      return this.formPostUpdate.title.length > 1;
+    },
+    validContent() {
+      return this.formPostUpdate.content.length > 28;
     },
   },
 
   methods: {
+    upload(event) {
+      this.formPostUpdate.imageUpdate = event.target.files[0];
+    },
+    reset(event) {
+      event.preventDefault();
+      this.formPostUpdate.imageUpdate = null;
+      this.updatePostShow = false;
+      this.$nextTick(() => {
+        this.updatePostShow = true;
+      });
+    },
     updatePost() {
-      instance
-        .put(`/posts/${this.postId}`, this.formPostUpdate, {
-          headers: { Authorization: `bearer ${this.userInfos.token}` },
-        })
-        .then(() => {
-          this.updatePostShow = false;
-          this.$store.commit("KEY");
-        })
-        .catch((error) => {
-          error;
-        });
+      let formData = new FormData();
+      formData.set("title", this.formPostUpdate.title);
+      formData.set("content", this.formPostUpdate.content);
+      if (this.validTitle === true && this.validContent === true) {
+        if (this.formPostUpdate.imageUpdate != null) {
+          formData.append("image", this.formPostUpdate.imageUpdate);
+        }
+        instance
+          .put(`/posts/${this.postId}`, formData, {
+            headers: { Authorization: `bearer ${this.userInfos.token}` },
+          })
+          .then(() => {
+            this.$store.commit("KEY");
+            this.updatePostShow = false;
+          })
+          .catch((error) => {
+            error;
+          });
+      }
     },
     deletePost() {
       instance
@@ -315,19 +398,19 @@ export default {
         relativeTime: {
           future: "in %s",
           past: "%s",
-          s: "une seconde",
+          s: "moins d'une minute",
           ss: "%d secondes",
-          m: "minute",
+          m: "1 minute",
           mm: "%d minutes",
-          h: "une heure",
+          h: "1 heure",
           hh: "%d heures",
-          d: "un jour",
+          d: "1 jour",
           dd: "%d jours",
-          w: "une semaine",
+          w: "1 semaine",
           ww: "%d semaines",
-          M: "un mois",
+          M: "1 mois",
           MM: "%d mois",
-          y: "une année",
+          y: "1 année",
           yy: "%d années",
         },
       });
@@ -337,4 +420,12 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss">
+#post {
+  border: 1px solid black;
+  box-shadow: 1px 1px 5px 1px black;
+}
+#input-comment {
+  background-color: rgb(213, 215, 216);
+}
+</style>

@@ -6,18 +6,15 @@ const Joi = require("joi");
 module.exports = (req, res, next) => {
   const valid = (data) => {
     const schema = Joi.object({
-      FormData: Joi.array().items(
-        Joi.object({
-          bio: Joi.string().empty(""),
-          avatar: Joi.string().empty(""),
-          username: Joi.string().required(),
-          email: Joi.string().email().required(),
-          password: Joi.string()
-            .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)
-            .required(),
-        })
-      ),
+      bio: Joi.string().empty(""),
+      image: Joi.string().empty(""),
+      username: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string()
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)
+        .required(),
     });
+
     return schema.validate(data);
   };
   const { error } = valid(req.body);

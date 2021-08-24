@@ -7,7 +7,7 @@ module.exports = {
         userId: 2,
         title: "Test 3",
         content: "Ceci est le message de test n°3",
-        nbComments: 0,
+        imageUrl: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

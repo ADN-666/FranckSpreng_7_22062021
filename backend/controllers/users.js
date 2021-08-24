@@ -37,13 +37,9 @@ module.exports = {
               })
                 .then((newUser) => {
                   return res.status(201).json({
-                    token: jwt.sign(
-                      { userId: newUser.id, isAdmin: newUser.isAdmin },
-                      "doudou21steph29",
-                      {
-                        expiresIn: "24h",
-                      }
-                    ),
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
                     avatar: newUser.avatar,
                     username: newUser.username,
                     userId: newUser.id,
@@ -66,13 +62,9 @@ module.exports = {
               })
                 .then(function (newUser) {
                   return res.status(201).json({
-                    token: jwt.sign(
-                      { userId: newUser.id, isAdmin: newUser.isAdmin },
-                      "doudou21steph29",
-                      {
-                        expiresIn: "24h",
-                      }
-                    ),
+                    token: jwt.sign({ userId: newUser.id }, "doudou21steph29", {
+                      expiresIn: "24h",
+                    }),
                     avatar: newUser.avatar,
                     username: newUser.username,
                     userId: newUser.id,
@@ -85,9 +77,9 @@ module.exports = {
             });
           }
         } else if (userFound.email == email) {
-          return res.status(401).json({ error: "email déjà présent dans la base !" });
+          return res.status(400).json("email déjà présent dans la base !");
         } else if (userFound.username == username) {
-          return res.status(401).json({ error: "username déjà présent dans la base !" });
+          return res.status(400).json("username déjà présent dans la base !");
         }
       })
       .catch((error) => res.status(500).json({ error: "Erreur de traitement" }));
@@ -107,22 +99,18 @@ module.exports = {
     })
       .then((userFound) => {
         if (!userFound) {
-          return res.status(401).json({ erreur: "Utilisateur non trouvé !" });
+          return res.status(401).json("Utilisateur non trouvé !");
         }
         bcrypt
           .compare(password, userFound.password)
           .then((valid) => {
             if (!valid) {
-              return res.status(401).json({ error: "Mot de passe incorrect !" });
+              return res.status(401).json("Mot de passe incorrect !");
             }
             res.status(200).json({
-              token: jwt.sign(
-                { userId: userFound.id, isAdmin: userFound.isAdmin },
-                "doudou21steph29",
-                {
-                  expiresIn: "24h",
-                }
-              ),
+              token: jwt.sign({ userId: userFound.id }, "doudou21steph29", {
+                expiresIn: "24h",
+              }),
               avatar: userFound.avatar,
               username: userFound.username,
               userId: userFound.id,

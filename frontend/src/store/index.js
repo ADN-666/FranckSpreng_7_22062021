@@ -12,7 +12,9 @@ export default new Vuex.Store({
   state: {
     posts: [],
     comments: [],
+    searchUser: "",
     upKey: 0,
+    errors: "",
 
     userInfos: {
       isLog: false,
@@ -23,6 +25,7 @@ export default new Vuex.Store({
       token: "",
     },
   },
+
   mutations: {
     TOKEN(state, payload) {
       state.userInfos.token = payload;
@@ -48,11 +51,17 @@ export default new Vuex.Store({
     COMMENTS(state, payload) {
       state.comments = payload;
     },
+    SEARCH(state, value) {
+      value ? (state.searchUser = value) : (state.searchUser = "");
+    },
     KEY(state) {
       state.upKey += 1;
     },
     KEYDEL(state) {
       state.upKey = 0;
+    },
+    ERRORS(state, value) {
+      value ? (state.errors = value) : (state.errors = "");
     },
   },
 
@@ -67,11 +76,11 @@ export default new Vuex.Store({
           commit("USERID", response.data.userId);
           commit("USERNAME", response.data.username);
           commit("AVATAR", response.data.avatar);
-          //localStorage.setItem("token", response.data.token);
+          commit("ERRORS");
           router.push({ name: "Posts" });
         })
         .catch((error) => {
-          console.log(error);
+          commit("ERROR", JSON.stringify(error.response.data));
         });
     },
     login({ commit }, form) {
@@ -84,11 +93,11 @@ export default new Vuex.Store({
           commit("USERID", response.data.userId);
           commit("USERNAME", response.data.username);
           commit("AVATAR", response.data.avatar);
-          //localStorage.setItem("token", response.data.token);
+          commit("ERRORS");
           router.push({ name: "Posts" });
         })
         .catch((error) => {
-          console.log(error);
+          commit("ERRORS", JSON.stringify(error.response.data));
         });
     },
     allPosts({ commit }) {

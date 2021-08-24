@@ -1,6 +1,6 @@
 <template>
-  <div class="Profil container">
-    <b-jumbotron bg-variant="light" class="my-5">
+  <div class="container">
+    <b-jumbotron bg-variant="white" class="my-5 shadow-lg">
       <b-col cols="12" class="text-right">
         <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none text-dark" no-caret>
           <template #button-content>
@@ -17,7 +17,13 @@
       <b-row
         ><b-col cols="12"><h2>Mon profil</h2> </b-col>
       </b-row>
-      <b-card no-body style="max-width: 40rem" class="mx-auto">
+      <b-card
+        no-body
+        style="max-width: 40rem"
+        class="mx-auto shadow-lg"
+        bg-variant="light"
+        border-variant="dark"
+      >
         <template #header>
           <b-row class="mb-3">
             <b-col>
@@ -45,7 +51,11 @@
           <b-row class="text-center mb-4">
             <b-col
               ><h4>
-                <b-badge variant="info">{{ user.nbPosts }} Publications</b-badge>
+                <b-badge variant="info" v-if="user.nbPosts == null">0 Publication </b-badge>
+                <b-badge variant="info"
+                  >{{ user.nbPosts }} <span v-if="user.nbPosts < 2">Publication</span
+                  ><span v-else>Publications</span></b-badge
+                >
               </h4></b-col
             >
           </b-row>
@@ -58,34 +68,49 @@
           v-model="updateProfilShow"
         >
           <b-form enctype="multipart/form-data">
-            <b-form-group id="input-group-1" label="Pseudo" label-for="input-1">
+            <b-form-group id="group-profil-pseudo" label="Pseudo" label-for="input-profil-pseudo">
               <b-form-input
-                id="input-1"
+                id="input-profil-pseudo"
                 v-model="user.username"
                 type="text"
-                required
               ></b-form-input>
+              <b-form-invalid-feedback :state="validPseudo">
+                Le pseudo est obligatoire et doit comporter 3 caractères minimum
+              </b-form-invalid-feedback>
+              <b-form-valid-feedback :state="validPseudo"> Parfait !!. </b-form-valid-feedback>
             </b-form-group>
-            <b-form-group id="input-group-2" label="Email" label-for="input-2">
+            <b-form-group id="group-profil-email" label="Email" label-for="input-profil-email">
               <b-form-input
-                id="input-2"
+                id="input-profil-email"
                 v-model="user.email"
                 type="email"
                 placeholder="Entrez votre email"
-                required
               ></b-form-input>
+              <b-form-invalid-feedback :state="validEmail">
+                L'email est obligatoire et doit comporter un "@" et un "."
+              </b-form-invalid-feedback>
+              <b-form-valid-feedback :state="validEmail"> Parfait !!. </b-form-valid-feedback>
             </b-form-group>
-            <b-form-group id="input-group-3" label="Bio" label-for="input-3">
+            <b-form-group id="group-profil-bio" label="Bio" label-for="input-profil-bio">
               <b-form-input
-                id="input-3"
+                id="input-profil-bio"
                 v-model="user.bio"
                 type="text"
                 placeholder="Entrez une courte description de vous"
               ></b-form-input>
             </b-form-group>
-            <b-form-group id="input-group-4" label="Avatar" label-for="image">
-              <b-form-file id="image" class="text-left" @change="upload"></b-form-file>
-              <b-button class="mr-5" type="reset" variant="info" size="sm" @click="reset"
+            <b-form-group
+              id="group-profil-avatar"
+              label="Avatar"
+              label-for="input-profil-avatar"
+              class="mb-2"
+            >
+              <b-form-file
+                id="input-profil-avatar"
+                class="text-left"
+                @change="upload"
+              ></b-form-file>
+              <b-button class="mr-5 mt-2" type="reset" variant="info" size="sm" @click="reset"
                 >Supprimer l'avatar</b-button
               >
             </b-form-group>
@@ -136,7 +161,7 @@ export default {
         bio: "",
         createdAt: "",
         email: "",
-        nbPosts: "",
+        nbPosts: 0,
         username: "",
       },
       image: null,
@@ -145,9 +170,17 @@ export default {
 
   computed: {
     ...mapState(["userInfos"]),
+    validPseudo() {
+      return this.user.username.length > 2;
+    },
+    validEmail() {
+      const regexEmail =
+        /[A-Za-z0-9](([_.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})/;
+      return regexEmail.test(this.user.email) === true;
+    },
   },
 
-  beforeMount() {
+  mounted() {
     this.getUser();
   },
 
@@ -172,28 +205,29 @@ export default {
       formData.set("username", this.user.username);
       formData.set("email", this.user.email);
       formData.set("bio", this.user.bio);
-      if (this.image != null) {
-        formData.append("image", this.image);
+      if (this.validPseudo === true && this.validEmail === true) {
+        if (this.image != null) {
+          formData.append("image", this.image);
+        }
+        instance
+          .put(`/users/me/${this.userInfos.userId}`, formData, {
+            headers: { Authorization: `bearer ${this.userInfos.token}` },
+          })
+          .then((response) => {
+            (this.user = response.data),
+              this.$store.commit("USERNAME", response.data.username),
+              this.$store.commit("AVATAR", response.data.avatar);
+          })
+          .catch((error) => {
+            error;
+          });
+        this.updateProfilShow = false;
       }
-      instance
-        .put(`/users/me/${this.userInfos.userId}`, formData, {
-          headers: { Authorization: `bearer ${this.userInfos.token}` },
-        })
-        .then((response) => {
-          (this.user = response.data),
-            this.$store.commit("USERNAME", response.data.username),
-            this.$store.commit("AVATAR", response.data.avatar);
-        })
-        .catch((error) => {
-          error;
-        });
-      this.updateProfilShow = false;
     },
 
     reset(event) {
       event.preventDefault();
       this.image = null;
-      console.log(this.avatar);
     },
 
     onDelete() {

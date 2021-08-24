@@ -25,8 +25,11 @@
                 size="sm"
                 class="mr-sm-2"
                 placeholder="Recherche par Username"
+                v-model="inputSearch"
               ></b-form-input>
-              <b-button size="sm" class="my-2 my-sm-0" type="submit">Recherche</b-button>
+              <b-button size="sm" class="my-2 my-sm-0" type="button" @click="onSearch"
+                >Recherche</b-button
+              >
             </b-nav-form>
 
             <b-nav-item-dropdown right>
@@ -71,6 +74,7 @@ export default {
   data() {
     return {
       showModal: false,
+      inputSearch: "",
     };
   },
 
@@ -78,11 +82,12 @@ export default {
     ...mapState(["userInfos", "upKey"]),
   },
 
-  updated() {
-    console.log(this.upKey);
-  },
-
   methods: {
+    onSearch() {
+      this.$store.commit("SEARCH", this.inputSearch);
+      console.log(this.inputSearch);
+    },
+
     ok() {
       this.showModal = false;
       this.$store.commit("TOKEN", "");
@@ -92,7 +97,7 @@ export default {
       this.$store.commit("AVATAR", "");
       this.$store.commit("POSTS", "");
       this.$store.commit("KEYDEL");
-      localStorage.removeItem("token");
+      localStorage.removeItem("vuex");
       this.$router.push({ name: "Home" });
     },
   },

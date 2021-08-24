@@ -1,6 +1,6 @@
 <template>
   <div class="Posts container">
-    <b-jumbotron bg-variant="light" class="my-5">
+    <b-jumbotron bg-variant="white" class="my-5 shadow-lg">
       <NewPost />
 
       <Post
@@ -10,6 +10,7 @@
         :title="post.title"
         :content="post.content"
         :userId="post.userId"
+        :imageUrl="post.imageUrl"
         :createdAt="post.createdAt"
         :nbComments="post.nbComments"
         :Likes="post.Likes"
@@ -17,7 +18,6 @@
         :P_Likes="post.P_Likes[0]"
         :username="post.P_User.username"
         :avatar="post.P_User.avatar"
-        id="post"
       />
     </b-jumbotron>
     <b-pagination
@@ -67,7 +67,6 @@ export default {
   mounted() {
     this.$store.dispatch("allPosts");
     this.$store.dispatch("allComs");
-    console.log(this.posts.length);
   },
 
   methods: {},

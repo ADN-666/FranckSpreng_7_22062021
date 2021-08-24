@@ -1,7 +1,7 @@
 <template>
   <div class="my-2">
     <b-collapse :id="'collapse' + comPostId" class="mt-3">
-      <b-card no-body style="max-width: 35rem" class="mx-auto mb-2">
+      <b-card id="comment" no-body style="max-width: 35rem" class="mx-auto mb-2 text-black">
         <template #header>
           <b-row class="mb-0 text-left">
             <b-col cols="10">
@@ -47,13 +47,13 @@
       >
         <b-form>
           <b-form-group
-            id="input-group-1"
+            id="group-comment-content"
             label="Publication"
-            label-for="input-1"
+            label-for="input-comment-content"
             class="text-dark"
           >
             <b-form-textarea
-              id="input-1"
+              id="input-comment-content"
               v-model="formCommentUpdate.content"
               rows="4"
               max-rows="10"
@@ -134,6 +134,12 @@ export default {
     };
   },
 
+  mounted() {
+    setTimeout(() => {
+      this.formCommentUpdate.content = this.content;
+    }, 500);
+  },
+
   computed: {
     ...mapState(["userInfos"]),
   },
@@ -148,8 +154,8 @@ export default {
         .catch((error) => {
           error;
         });
-      this.updateComShow = false;
       this.$store.commit("KEY");
+      this.updateComShow = false;
     },
     deleteComment() {
       instance
@@ -192,4 +198,10 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss">
+#comment {
+  border: 1px solid black;
+  box-shadow: 1px 1px 10px 5px black;
+  background-color: #dbdbdb;
+}
+</style>

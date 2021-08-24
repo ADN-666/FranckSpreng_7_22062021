@@ -1,12 +1,14 @@
 <template>
-  <div>
-    <b-jumbotron bg-variant="light" class="my-5">
+  <div class="container">
+    <b-jumbotron bg-variant="white" class="my-5 shadow-lg">
       <b-card
         no-body
         style="max-width: 40rem"
-        class="mx-auto mb-5"
-        v-for="user in usersPagin"
+        class="mx-auto mb-5 shadow-lg"
+        v-for="user in (usersPagin, filteredUsers)"
         :key="user.id"
+        bg-variant="light"
+        border-variant="dark"
       >
         <template #header>
           <b-row class="mb-0 text-left">
@@ -27,7 +29,9 @@
           <b-row class="align-items-center">
             <b-col>
               <b-button :to="{ path: `/posts/${user.id}` }"
-                ><b-badge variant="light">{{ user.nbPosts }}</b-badge> Publications</b-button
+                ><b-badge class="mr-1" variant="light">{{ user.nbPosts }}</b-badge>
+                <span v-if="user.nbPosts < 2">Publication</span
+                ><span v-else>Publications</span></b-button
               ></b-col
             ></b-row
           >
@@ -64,8 +68,14 @@ export default {
     };
   },
 
+  beforeMount() {
+    if (this.searchUser != "") {
+      this.filteredUsers;
+    }
+  },
+
   computed: {
-    ...mapState(["userInfos"]),
+    ...mapState(["userInfos", "searchUser"]),
     usersPagin() {
       return this.users.slice(
         (this.currentPage - 1) * this.perPage,
@@ -75,9 +85,12 @@ export default {
     rows() {
       return this.users.length;
     },
+    filteredUsers() {
+      return this.users.filter((user) => user.username == this.searchUser);
+    },
   },
 
-  beforeMount() {
+  mounted() {
     instance
       .get("/users/all", {
         headers: { Authorization: `bearer ${this.userInfos.token}` },
