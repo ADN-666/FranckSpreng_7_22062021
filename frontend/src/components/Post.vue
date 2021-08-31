@@ -15,7 +15,7 @@
               toggle-class="text-decoration-none text-dark"
               no-caret
             >
-              <template #button-content>
+              <template #button-content class="border-2">
                 <b-icon icon="pencil-square" font-scale="2"> </b-icon>
               </template>
               <b-dropdown-item-button
@@ -127,16 +127,31 @@
             </b-form-invalid-feedback>
             <b-form-valid-feedback :state="validContent"> Parfait !!. </b-form-valid-feedback>
           </b-form-group>
-          <b-form-group
-            id="group-post-image"
-            :label="`image: ${this.formPostUpdate.imageUpdate}`"
-            label-for="input-post-image"
-            class="text-dark"
-          >
+          <b-form-group id="group-post-image" class="text-dark">
+            <p class="mb-0">
+              <label
+                label-for="input-post-image"
+                v-if="newUrl == '' && formPostUpdate.imageUpdate != null"
+                class="text-dark"
+                >Image :
+                {{ formPostUpdate.imageUpdate.split("http://localhost:3000/images/")[1] }}</label
+              >
+              <label label-for="input-post-image" v-else-if="newUrl != ''" class="text-dark"
+                >Image : {{ newUrl.name }}</label
+              >
+              <label label-for="input-post-image" v-else class="text-dark"
+                >Image : Aucune image sélectionnée</label
+              >
+            </p>
             <b-button class="mb-2" type="reset" variant="info" size="sm" @click="reset"
               >Supprimer l'image</b-button
             >
-            <b-form-file id="input-post-image" class="text-left" @change="upload"></b-form-file>
+            <b-form-file
+              id="input-post-image"
+              placeholder="Choisissez un fichier"
+              class="text-left"
+              @change="upload"
+            ></b-form-file>
           </b-form-group>
         </b-form>
         <template #modal-footer="{ cancel }">
@@ -155,8 +170,8 @@
       >
         <p class="my-4">Etes-vous sûr de vouloir supprimer cette publication !</p>
         <template #modal-footer="{ cancel }">
-          <b-button modal-footer size="sm" variant="outline-info" @click="deletePost">OUI</b-button>
-          <b-button modal-footer size="sm" variant="outline-danger" @click="cancel()">NON</b-button>
+          <b-button modal-footer size="sm" variant="info" @click="deletePost">OUI</b-button>
+          <b-button modal-footer size="sm" variant="danger" @click="cancel()">NON</b-button>
         </template>
       </b-modal>
       <b-modal :id="'modal-img' + postId" ref="img" centered v-model="imgShow">
@@ -173,8 +188,8 @@
             id="input-comment"
             v-model="formCommentCreate.content"
             type="text"
-            class="rounded-pill mx-auto my-2 border-dark text-white"
-            placeholder="Commenter cette publication..."
+            class="rounded-pill mx-auto my-3 border-dark text-black"
+            placeholder="Commenter ce post..."
           ></b-form-input
         ></b-col>
       </b-row>
@@ -277,6 +292,7 @@ export default {
         isLike: false,
         isDislike: false,
       },
+      newUrl: "",
     };
   },
 
@@ -305,10 +321,12 @@ export default {
   methods: {
     upload(event) {
       this.formPostUpdate.imageUpdate = event.target.files[0];
+      this.newUrl = event.target.files[0];
     },
     reset(event) {
       event.preventDefault();
       this.formPostUpdate.imageUpdate = null;
+      this.newUrl = "";
       this.updatePostShow = false;
       this.$nextTick(() => {
         this.updatePostShow = true;

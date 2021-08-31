@@ -2,6 +2,8 @@ const models = require("../models");
 const jwtUtils = require("../utils/jwt.utils");
 
 module.exports = {
+  // logique de création des commentaires
+
   createComment: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
@@ -11,11 +13,11 @@ module.exports = {
       content: req.body.content,
     };
     models.Comment.create(comment)
-      .then((newComment) =>
-        res.status(201).json({ message: "Commentaire enregistré !", newComment })
-      )
+      .then((newComment) => res.status(201).json({ message: "Commentaire enregistré !" }))
       .catch((error) => res.status(400).json({ error }));
   },
+
+  // logique de recupération des commentaires
 
   getAllComments: function (req, res) {
     models.Comment.findAll({

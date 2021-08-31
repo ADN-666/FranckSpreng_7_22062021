@@ -21,7 +21,7 @@
       />
     </b-jumbotron>
     <b-pagination
-      v-if="rows > 2"
+      v-if="rows > 3"
       class="mb-5 text-info"
       v-model="currentPage"
       :total-rows="rows"
@@ -45,7 +45,7 @@ export default {
   components: { Post, NewPost },
   data() {
     return {
-      perPage: 2,
+      perPage: 3,
       currentPage: 1,
     };
   },

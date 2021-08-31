@@ -108,9 +108,13 @@ module.exports = {
               return res.status(401).json("Mot de passe incorrect !");
             }
             res.status(200).json({
-              token: jwt.sign({ userId: userFound.id }, "doudou21steph29", {
-                expiresIn: "24h",
-              }),
+              token: jwt.sign(
+                { userId: userFound.id, isAdmin: userFound.isAdmin },
+                "doudou21steph29",
+                {
+                  expiresIn: "24h",
+                }
+              ),
               avatar: userFound.avatar,
               username: userFound.username,
               userId: userFound.id,
@@ -154,7 +158,6 @@ module.exports = {
         "bio",
         "createdAt",
         "email",
-        "updatedAt",
         "username",
 
         [
@@ -193,8 +196,16 @@ module.exports = {
                   bio: bio,
                   avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
                 })
-                .then((userUpdate) => res.status(200).json(userUpdate))
-                .catch(() =>
+                .then((userUpdate) =>
+                  res.status(200).json({
+                    username: userUpdate.username,
+                    email: userUpdate.email,
+                    bio: userUpdate.bio,
+                    avatar: userUpdate.avatar,
+                    createdAt: userUpdate.createdAt,
+                  })
+                )
+                .catch((error) =>
                   res.status(400).json({
                     error: "il y a eu un problème à la suppression de l'ancienne image !",
                   })
@@ -208,7 +219,15 @@ module.exports = {
                 bio: bio,
                 avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
               })
-              .then((userUpdate) => res.status(201).json(userUpdate))
+              .then((userUpdate) =>
+                res.status(201).json({
+                  username: userUpdate.username,
+                  email: userUpdate.email,
+                  bio: userUpdate.bio,
+                  avatar: userUpdate.avatar,
+                  createdAt: userUpdate.createdAt,
+                })
+              )
               .catch(() =>
                 res.status(400).json({
                   error: "il y a eu un problème à la suppression de l'ancienne image !",
@@ -216,7 +235,7 @@ module.exports = {
               );
           }
         } else {
-          if (userFound.avatar != null) {
+          if (userFound.avatar != null && req.body.image == null) {
             const filename = userFound.avatar.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => {
               userFound
@@ -226,7 +245,15 @@ module.exports = {
                   bio: bio,
                   avatar: null,
                 })
-                .then((userUpdate) => res.status(202).json(userUpdate))
+                .then((userUpdate) =>
+                  res.status(202).json({
+                    username: userUpdate.username,
+                    email: userUpdate.email,
+                    bio: userUpdate.bio,
+                    avatar: userUpdate.avatar,
+                    createdAt: userUpdate.createdAt,
+                  })
+                )
                 .catch(() =>
                   res.status(500).json({ error: " Le profil n'a pas été mis à jour  " })
                 );
@@ -237,10 +264,17 @@ module.exports = {
                 username: username,
                 email: email,
                 bio: bio,
-                avatar: null,
               })
-              .then((userUpdate) => res.status(203).json(userUpdate))
-              .catch(() => res.status(500).json({ error: " Le profil n'a pas été mis à jour  " }));
+              .then((userUpdate) =>
+                res.status(203).json({
+                  username: userUpdate.username,
+                  email: userUpdate.email,
+                  bio: userUpdate.bio,
+                  avatar: userUpdate.avatar,
+                  createdAt: userUpdate.createdAt,
+                })
+              )
+              .catch((error) => res.status(501).json({ error }));
           }
         }
       })

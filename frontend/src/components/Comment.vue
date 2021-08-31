@@ -1,7 +1,7 @@
 <template>
   <div class="my-2">
     <b-collapse :id="'collapse' + comPostId" class="mt-3">
-      <b-card id="comment" no-body style="max-width: 35rem" class="mx-auto mb-2 text-black">
+      <b-card id="comment" no-body style="max-width: 35rem" class="mx-auto mb-5 text-black">
         <template #header>
           <b-row class="mb-0 text-left">
             <b-col cols="10">
@@ -48,7 +48,7 @@
         <b-form>
           <b-form-group
             id="group-comment-content"
-            label="Publication"
+            label="Commentaire"
             label-for="input-comment-content"
             class="text-dark"
           >
@@ -65,9 +65,7 @@
           <b-button modal-footer class="mr-5" variant="info" size="sm" @click="updateComment"
             >Soumettre</b-button
           >
-          <b-button modal-footer variant="outline-danger" size="sm" @click="cancel()">
-            Annuler
-          </b-button>
+          <b-button modal-footer variant="danger" size="sm" @click="cancel()"> Annuler </b-button>
         </template>
       </b-modal>
       <b-modal
@@ -79,7 +77,7 @@
         <p class="my-4">Etes-vous sûr de vouloir supprimer ce commentaire !</p>
         <template #modal-footer="{ cancel }">
           <b-button modal-footer size="sm" variant="info" @click="deleteComment">OUI</b-button>
-          <b-button modal-footer size="sm" variant="outline-danger" @click="cancel()">NON</b-button>
+          <b-button modal-footer size="sm" variant="danger" @click="cancel()">NON</b-button>
         </template>
       </b-modal>
     </b-collapse>
@@ -201,7 +199,7 @@ export default {
 <style lang="scss">
 #comment {
   border: 1px solid black;
-  box-shadow: 1px 1px 10px 5px black;
+  box-shadow: 1px 1px 10px 2px black;
   background-color: #dbdbdb;
 }
 </style>

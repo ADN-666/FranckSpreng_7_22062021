@@ -12,7 +12,7 @@ export default new Vuex.Store({
   state: {
     posts: [],
     comments: [],
-    searchUser: "",
+
     upKey: 0,
     errors: "",
 
@@ -33,8 +33,8 @@ export default new Vuex.Store({
     ISLOG(state, value) {
       value ? (state.userInfos.isLog = value) : (state.userInfos.isLog = "");
     },
-    ISADMIN(state, value) {
-      value ? (state.userInfos.isAdmin = value) : (state.userInfos.isAdmin = "");
+    ISADMIN(state, payload) {
+      state.userInfos.isAdmin = payload;
     },
     USERID(state, value) {
       value ? (state.userInfos.userId = value) : (state.userInfos.userId = "");
@@ -51,9 +51,7 @@ export default new Vuex.Store({
     COMMENTS(state, payload) {
       state.comments = payload;
     },
-    SEARCH(state, value) {
-      value ? (state.searchUser = value) : (state.searchUser = "");
-    },
+
     KEY(state) {
       state.upKey += 1;
     },
@@ -80,7 +78,7 @@ export default new Vuex.Store({
           router.push({ name: "Posts" });
         })
         .catch((error) => {
-          commit("ERROR", JSON.stringify(error.response.data));
+          commit("ERRORS", JSON.stringify(error.response.data));
         });
     },
     login({ commit }, form) {
@@ -128,6 +126,7 @@ export default new Vuex.Store({
 
   plugins: [
     createPersistedState({
+      key: "token",
       storage: {
         getItem: (key) => ls.get(key),
         setItem: (key, value) => ls.set(key, value),

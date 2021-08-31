@@ -1,6 +1,6 @@
 <template>
   <div class="Home container">
-    <b-jumbotron bg-variant="light" class="my-5">
+    <b-jumbotron bg-variant="light" class="my-5 shadow-lg">
       <b-card
         title="Bienvenue sur le réseau social de Groupomania"
         img-src="../assets/icon.svg"
@@ -8,7 +8,7 @@
         img-top
         tag="article"
         style="max-width: 35rem"
-        class="mb-2 mx-auto"
+        class="mb-2 mx-auto shadow-lg"
         bg-variant="light"
         border-variant="dark"
       >

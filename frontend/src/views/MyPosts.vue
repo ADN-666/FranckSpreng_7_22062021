@@ -7,17 +7,19 @@
       <h4 v-else-if="this.posts.length == 0 && userInfos.userId != $route.params.id">
         Cet utilisateur n'a pas de publication pour l'instant
       </h4>
-      <NewPost v-if="userInfos.userId == $route.params.id" />
+      <NewPost v-if="this.posts.length !== 0 || userInfos.userId == $route.params.id" />
       <Post
         v-for="post of postPagin"
         :postId="post.id"
         :title="post.title"
         :content="post.content"
         :userId="post.userId"
+        :imageUrl="post.imageUrl"
         :createdAt="post.createdAt"
         :nbComments="post.nbComments"
         :Likes="post.Likes"
         :Dislikes="post.Dislikes"
+        :P_Likes="post.P_Likes[0]"
         :username="post.P_User.username"
         :avatar="post.P_User.avatar"
         :key="post.id"
@@ -59,20 +61,20 @@ export default {
   mounted() {
     this.user = this.$route.path;
     this.getPosts();
-    if (this.posts.length == 0 && this.userInfos.userId != this.$route.params.id) {
-      setTimeout(() => {
+    this.$store.dispatch("allComs");
+    setTimeout(() => {
+      if (this.posts.length == 0 && this.userInfos.userId != this.$route.params.id) {
         this.$router.push({ name: "Users" });
-      }, 2500);
-    }
+      }
+    }, 2500);
   },
+
   beforeRouteUpdate(to, from, next) {
     if (this.user == this.$route.path) {
       next();
     }
     this.user = this.$route.path;
     this.getPosts();
-
-    next();
   },
 
   computed: {

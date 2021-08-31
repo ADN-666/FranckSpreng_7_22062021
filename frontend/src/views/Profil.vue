@@ -51,9 +51,9 @@
           <b-row class="text-center mb-4">
             <b-col
               ><h4>
-                <b-badge variant="info" v-if="user.nbPosts == null">0 Publication </b-badge>
+                <b-badge variant="info" v-if="nbPosts == null">0 Publication </b-badge>
                 <b-badge variant="info"
-                  >{{ user.nbPosts }} <span v-if="user.nbPosts < 2">Publication</span
+                  >{{ nbPosts }} <span v-if="nbPosts < 2">Publication</span
                   ><span v-else>Publications</span></b-badge
                 >
               </h4></b-col
@@ -99,16 +99,25 @@
                 placeholder="Entrez une courte description de vous"
               ></b-form-input>
             </b-form-group>
-            <b-form-group
-              id="group-profil-avatar"
-              label="Avatar"
-              label-for="input-profil-avatar"
-              class="mb-2"
-            >
+            <b-form-group id="group-profil-avatar" class="mb-2">
+              <label
+                label-for="input-profil-avatar"
+                v-if="newUrl == '' && user.avatar != null"
+                class="text-dark"
+                >Avatar : {{ user.avatar.split("http://localhost:3000/images/")[1] }}</label
+              >
+              <label label-for="input-profil-avatar" v-else-if="newUrl != ''" class="text-dark"
+                >Avatar : {{ newUrl.name }}</label
+              >
+              <label label-for="input-profil-avatar" v-else class="text-dark"
+                >Avatar : Aucun avatar sélectionné
+              </label>
+
               <b-form-file
                 id="input-profil-avatar"
                 class="text-left"
                 @change="upload"
+                placeholder="Choisissez un fichier"
               ></b-form-file>
               <b-button class="mr-5 mt-2" type="reset" variant="info" size="sm" @click="reset"
                 >Supprimer l'avatar</b-button
@@ -140,6 +149,12 @@
           </template>
         </b-modal>
       </b-card>
+      <b-modal id="modal-profil-erreur" centered v-model="errorMsg" title="Avertissement">
+        <h5>{{ errors }}</h5>
+        <template #modal-footer="{ ok }">
+          <b-button modal-footer size="sm" variant="info" @click="ok()">OK</b-button>
+        </template>
+      </b-modal>
     </b-jumbotron>
   </div>
 </template>
@@ -161,10 +176,12 @@ export default {
         bio: "",
         createdAt: "",
         email: "",
-        nbPosts: 0,
         username: "",
       },
-      image: null,
+      nbPosts: 0,
+      newUrl: "",
+      errors: "",
+      errorMsg: false,
     };
   },
 
@@ -190,13 +207,15 @@ export default {
         .get(`/users/me/${this.userInfos.userId}`, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => (this.user = response.data))
+        .then((response) => {
+          (this.user = response.data), (this.nbPosts = response.data.nbPosts);
+        })
         .catch((error) => {
           error;
         });
     },
     upload(event) {
-      this.image = event.target.files[0];
+      this.newUrl = event.target.files[0];
     },
 
     onSubmit(event) {
@@ -206,8 +225,10 @@ export default {
       formData.set("email", this.user.email);
       formData.set("bio", this.user.bio);
       if (this.validPseudo === true && this.validEmail === true) {
-        if (this.image != null) {
-          formData.append("image", this.image);
+        if (this.newUrl != "") {
+          formData.append("image", this.newUrl);
+        } else if (this.user.avatar != null) {
+          formData.append("image", this.user.avatar);
         }
         instance
           .put(`/users/me/${this.userInfos.userId}`, formData, {
@@ -217,17 +238,30 @@ export default {
             (this.user = response.data),
               this.$store.commit("USERNAME", response.data.username),
               this.$store.commit("AVATAR", response.data.avatar);
+            this.newUrl = "";
+            this.updateProfilShow = false;
           })
           .catch((error) => {
-            error;
+            this.errors = error.response.data.error.errors[0].path;
+            if (this.errors == "users.username") {
+              this.errors = "Ce pseudo n'est pas disponible";
+              this.errorMsg = true;
+            } else {
+              this.errors = "Cet email n'est pas disponible";
+              this.errorMsg = true;
+            }
           });
-        this.updateProfilShow = false;
       }
     },
 
     reset(event) {
       event.preventDefault();
-      this.image = null;
+      this.user.avatar = null;
+      this.newUrl = "";
+      this.updateProfilShow = false;
+      this.$nextTick(() => {
+        this.updateProfilShow = true;
+      });
     },
 
     onDelete() {

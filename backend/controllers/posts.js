@@ -74,7 +74,6 @@ module.exports = {
         {
           model: models.User,
           as: "P_User",
-
           attributes: ["username", "id", "avatar"],
         },
         {
@@ -91,6 +90,8 @@ module.exports = {
   },
 
   getUserPost: function (req, res) {
+    const headerAuth = req.headers["authorization"];
+    const userId = jwtUtils.getUserId(headerAuth);
     models.Post.findAll({
       order: [["id", "DESC"]],
       where: { userId: req.params.userId },
@@ -126,12 +127,20 @@ module.exports = {
           "Dislikes",
         ],
       ],
-      include: {
-        model: models.User,
-        as: "P_User",
-
-        attributes: ["username", "id", "avatar"],
-      },
+      include: [
+        {
+          model: models.User,
+          as: "P_User",
+          attributes: ["username", "id", "avatar"],
+        },
+        {
+          model: models.Like,
+          as: "P_Likes",
+          attributes: ["isLike", "isDislike"],
+          where: { userId: userId },
+          required: false,
+        },
+      ],
     })
       .then((posts) => res.status(200).json(posts))
       .catch((error) => res.status(400).json({ error }));

@@ -1,6 +1,6 @@
 <template>
   <div class="Signup container">
-    <b-jumbotron bg-variant="light" class="my-5 mx-auto" style="max-width: 30rem">
+    <b-jumbotron bg-variant="light" class="my-5 mx-auto shadow-lg" style="max-width: 30rem">
       <b-row class="my-5 h2">
         <b-col><p>Formulaire d'inscription</p></b-col>
       </b-row>
@@ -69,7 +69,7 @@
             drop-placeholder="Drop file here..."
           ></b-form-file>
         </b-form-group>
-        <b-button class="mr-5" type="submit" variant="primary">Soumettre</b-button>
+        <b-button class="mr-5" type="submit" variant="info">Soumettre</b-button>
 
         <b-button type="button" @click.prevent="onCancel" variant="danger">Annuler</b-button>
       </b-form>

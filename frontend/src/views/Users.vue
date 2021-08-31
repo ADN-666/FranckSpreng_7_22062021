@@ -1,12 +1,22 @@
 <template>
   <div class="container">
     <b-jumbotron bg-variant="white" class="my-5 shadow-lg">
+      <b-form-row class="mb-5">
+        <b-col class="mx-auto col-6">
+          <b-form-input
+            size="sm"
+            class="mr-sm-2 text-center shadow-lg border-dark"
+            placeholder="Recherche par Username"
+            v-model.trim="inputSearch"
+          ></b-form-input>
+        </b-col>
+      </b-form-row>
       <b-card
         no-body
         style="max-width: 40rem"
         class="mx-auto mb-5 shadow-lg"
-        v-for="user in (usersPagin, filteredUsers)"
-        :key="user.id"
+        v-for="user in usersPagin"
+        :key="user.username"
         bg-variant="light"
         border-variant="dark"
       >
@@ -14,7 +24,6 @@
           <b-row class="mb-0 text-left">
             <b-col cols="10">
               <b-avatar variant="info" :src="user.avatar"></b-avatar>
-
               {{ user.username }}
             </b-col>
           </b-row>
@@ -39,7 +48,6 @@
       </b-card>
     </b-jumbotron>
     <b-pagination
-      v-if="rows > 2"
       class="mb-5 text-info"
       v-model="currentPage"
       :total-rows="rows"
@@ -65,28 +73,22 @@ export default {
       users: [],
       perPage: 2,
       currentPage: 1,
+      inputSearch: "",
     };
   },
 
-  beforeMount() {
-    if (this.searchUser != "") {
-      this.filteredUsers;
-    }
-  },
-
   computed: {
-    ...mapState(["userInfos", "searchUser"]),
+    ...mapState(["userInfos"]),
     usersPagin() {
-      return this.users.slice(
-        (this.currentPage - 1) * this.perPage,
-        this.currentPage * this.perPage
-      );
+      return this.users
+        .filter((user) => user.username.toLowerCase().startsWith(this.inputSearch))
+        .slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
     },
     rows() {
-      return this.users.length;
-    },
-    filteredUsers() {
-      return this.users.filter((user) => user.username == this.searchUser);
+      if (this.inputSearch == "") {
+        return this.users.length;
+      }
+      return this.usersPagin.length;
     },
   },
 

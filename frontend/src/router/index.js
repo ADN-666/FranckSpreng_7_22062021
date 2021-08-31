@@ -8,6 +8,7 @@ import MyPosts from "../views/MyPosts";
 import Profil from "../views/Profil";
 import Users from "../views/Users";
 import store from "../store/index";
+import jwtDecode from "jwt-decode";
 
 Vue.use(VueRouter);
 
@@ -17,7 +18,7 @@ const routes = [
     name: "Home",
     component: Home,
     beforeEnter: (to, from, next) => {
-      store.state.userInfos.isLog == true ? next({ name: "Posts" }) : next();
+      store.state.userInfos.isLog ? next({ name: "Posts" }) : next();
     },
   },
   {
@@ -46,7 +47,11 @@ const routes = [
     name: "Posts",
     component: Posts,
     beforeEnter: (to, from, next) => {
-      store.state.userInfos.token ? next() : next({ name: "Home" });
+      let token = jwtDecode(store.state.userInfos.token);
+      if (token.exp > new Date().getTime() / 1000) {
+        next();
+      }
+      next({ name: "Home" });
     },
   },
   {

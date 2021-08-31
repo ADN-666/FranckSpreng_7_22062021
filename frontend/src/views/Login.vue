@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <b-jumbotron bg-variant="light" class="my-5 mx-auto" style="max-width: 30rem">
+    <b-jumbotron bg-variant="light" class="my-5 mx-auto shadow-lg" style="max-width: 30rem">
       <b-row class="my-5 h2">
         <b-col><p>Accès utilisateur</p></b-col>
       </b-row>
@@ -38,9 +38,7 @@
           </b-form-invalid-feedback>
           <b-form-valid-feedback :state="validPassword"> Parfait !!. </b-form-valid-feedback>
         </b-form-group>
-        <b-button class="mr-5" type="submit" @click="onSubmit" variant="primary"
-          >Soumettre</b-button
-        >
+        <b-button class="mr-5" type="submit" @click="onSubmit" variant="info">Soumettre</b-button>
 
         <b-button type="button" @click.prevent="onCancel" variant="danger">Annuler</b-button>
       </b-form>
