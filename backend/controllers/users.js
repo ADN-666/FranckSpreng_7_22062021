@@ -26,6 +26,7 @@ module.exports = {
       .then((userFound) => {
         if (!userFound) {
           if (req.file != null) {
+            //logique si un avatar est présent dans la requête
             bcrypt.hash(password, 10, function (err, hash) {
               models.User.create({
                 username: username,
@@ -51,6 +52,7 @@ module.exports = {
                 );
             });
           } else {
+            // logique sans avatar dans la requête
             bcrypt.hash(password, 10, function (err, hash) {
               models.User.create({
                 username: username,
@@ -75,7 +77,7 @@ module.exports = {
                   res.status(500).json({ error: "Impossible de créer un nouvel utilisateur" })
                 );
             });
-          }
+          } // logique controlant la présence dans la base d'un email ou username
         } else if (userFound.email == email) {
           return res.status(400).json("email déjà présent dans la base !");
         } else if (userFound.username == username) {
@@ -126,6 +128,7 @@ module.exports = {
       .catch((error) => res.status(500).json({ error }));
   },
 
+  //requête d'affichage des utilisateurs avec sous requête sur le nombre de post publiés par chacun
   getAllUsers: function (req, res) {
     models.User.findAll({
       order: [["username", "ASC"]],
@@ -148,6 +151,7 @@ module.exports = {
       .catch((error) => res.status(500).json({ error }));
   },
 
+  //requête d'affichage du profil utilisateur avec sous requête sur le nombre de post publiés
   getUserProfile: function (req, res) {
     const headerAuth = req.headers["authorization"];
     const userId = jwtUtils.getUserId(headerAuth);
@@ -186,6 +190,7 @@ module.exports = {
     })
       .then((userFound) => {
         if (req.file) {
+          //logique de mise à jour du profil et de l'avatar avec un avatar déjà présent dans la base
           if (userFound.avatar != null) {
             const filename = userFound.avatar.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => {
@@ -212,6 +217,7 @@ module.exports = {
                 );
             });
           } else {
+            //logique de mise à jour du profil et de l'avatar sans avatar déjà présent dans la base
             userFound
               .update({
                 username: username,
@@ -220,7 +226,7 @@ module.exports = {
                 avatar: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
               })
               .then((userUpdate) =>
-                res.status(201).json({
+                res.status(200).json({
                   username: userUpdate.username,
                   email: userUpdate.email,
                   bio: userUpdate.bio,
@@ -235,6 +241,7 @@ module.exports = {
               );
           }
         } else {
+          //logique de mise à jour du profil et de l'avatar avec suppression de celui dans la base
           if (userFound.avatar != null && req.body.image == null) {
             const filename = userFound.avatar.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => {
@@ -246,7 +253,7 @@ module.exports = {
                   avatar: null,
                 })
                 .then((userUpdate) =>
-                  res.status(202).json({
+                  res.status(200).json({
                     username: userUpdate.username,
                     email: userUpdate.email,
                     bio: userUpdate.bio,
@@ -259,6 +266,7 @@ module.exports = {
                 );
             });
           } else {
+            //logique de mise à jour du profil sans remplacement de l'avatar présent dans la base
             userFound
               .update({
                 username: username,
@@ -266,7 +274,7 @@ module.exports = {
                 bio: bio,
               })
               .then((userUpdate) =>
-                res.status(203).json({
+                res.status(200).json({
                   username: userUpdate.username,
                   email: userUpdate.email,
                   bio: userUpdate.bio,
@@ -274,7 +282,7 @@ module.exports = {
                   createdAt: userUpdate.createdAt,
                 })
               )
-              .catch((error) => res.status(501).json({ error }));
+              .catch((error) => res.status(500).json({ error }));
           }
         }
       })
@@ -294,6 +302,7 @@ module.exports = {
     })
       .then((userFound) => {
         if (userFound.id != userId) {
+          //condition permettant de vérifier le droit de suppression du compte
           return res.status(401).json({ message: "Vous ne pouvez pas supprimé ce compte" });
         } else {
           if (userFound.avatar) {
@@ -319,45 +328,6 @@ module.exports = {
             );
         }
       })
-      .catch((error) => res.status(500).json({ error: "Aucun utilisateur correspondant" }));
-  },
-
-  // a supprimer
-
-  getOneUser: function (req, res) {
-    models.User.findOne({
-      group: "U_Posts.id",
-      attributes: ["username", "bio", "avatar"],
-      where: { id: req.params.id },
-      include: {
-        model: models.Post,
-        as: "U_Posts",
-        attributes: [
-          "id",
-          "title",
-          "content",
-          [
-            Sequelize.literal(`(
-                    SELECT COUNT(postId)
-                    FROM Comments  WHERE
-                     U_Posts.id = Comments.postId
-                )`),
-            "nbComments",
-          ],
-        ],
-        include: [
-          {
-            model: models.Like,
-            as: "P_Likes",
-            attributes: [
-              [Sequelize.fn("SUM", Sequelize.col("isLike")), "Likes"],
-              [Sequelize.fn("SUM", Sequelize.col("isDislike")), "Dislikes"],
-            ],
-          },
-        ],
-      },
-    })
-      .then((userFound) => res.status(200).json(userFound))
-      .catch((error) => res.status(404).json({ error }));
+      .catch((error) => res.status(404).json({ error: "Aucun utilisateur correspondant" }));
   },
 };

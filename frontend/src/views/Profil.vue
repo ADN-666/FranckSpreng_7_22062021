@@ -188,9 +188,11 @@ export default {
   computed: {
     ...mapState(["userInfos"]),
     validPseudo() {
+      //fonction de validation du pseudo
       return this.user.username.length > 2;
     },
     validEmail() {
+      //fonction de validation de l'email
       const regexEmail =
         /[A-Za-z0-9](([_.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})/;
       return regexEmail.test(this.user.email) === true;
@@ -198,6 +200,7 @@ export default {
   },
 
   mounted() {
+    //récupération du profil utilisateur
     this.getUser();
   },
 
@@ -219,6 +222,8 @@ export default {
     },
 
     onSubmit(event) {
+      //fonction de màj du profil utilisateur avec création d'un formData
+      //et màj de l'avatar
       event.preventDefault();
       let formData = new FormData();
       formData.set("username", this.user.username);
@@ -242,6 +247,8 @@ export default {
             this.updateProfilShow = false;
           })
           .catch((error) => {
+            //récupération et traitement des erreurs renvoyées par mysql
+            // en cas de pseudo ou email déjà présent dans la base
             this.errors = error.response.data.error.errors[0].path;
             if (this.errors == "users.username") {
               this.errors = "Ce pseudo n'est pas disponible";
@@ -265,6 +272,7 @@ export default {
     },
 
     onDelete() {
+      //fonction de suppression de l'utilisateur
       instance
         .delete(`/users/me/${this.userInfos.userId}`, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
@@ -285,6 +293,7 @@ export default {
       this.deleteProfilShow = false;
     },
     localDate(createdAt) {
+      //formatage de la date
       let timestamp = Date.parse(createdAt);
       let local = new Date(timestamp);
       let date = local.toLocaleDateString();

@@ -1,8 +1,3 @@
-/* Fichier contenant la logique permettant l'attribution d'un like ou dislike
-  à une sauce sélectionné ainsi que l'ajout du user id dans le tableau usersliked
-  ou usersdisliked correspondant à son choix, selon des conditions définies, puis
-  mise é jour de la sauce*/
-
 const models = require("../models");
 const jwtUtils = require("../utils/jwt.utils");
 
@@ -25,11 +20,13 @@ module.exports = {
     })
       .then((likeFound) => {
         if (!likeFound) {
+          //condition permettant la création d'un like ou dislike
           models.Like.create(like)
             .then(() => res.status(201).json({ message: "Le like a bien été créé" }))
             .catch((error) => res.status(400).json({ error: "erreur à la création du like" }));
         } else {
           if (!(newIsLike == true && newIsDislike == true)) {
+            //condition permettant la modification d'un like ou dislike ou sa suppression
             models.Like.update(
               {
                 isLike: newIsLike,
@@ -48,7 +45,7 @@ module.exports = {
           }
         }
       })
-      .catch((error) => res.status(400).json({ error: "erreur dés le début du traitement" }));
+      .catch((error) => res.status(500).json({ error: "erreur dés le début du traitement" }));
   },
 
   getLikes: function (req, res) {

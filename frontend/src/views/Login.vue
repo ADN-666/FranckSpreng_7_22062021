@@ -72,10 +72,12 @@ export default {
     ...mapActions(["login"]),
     ...mapState(["errors"]),
     validPassword() {
+      //fonction permettant de controler les paramètres du mot de passe
       const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
       return this.form.password.length > 7 && regexPassword.test(this.form.password) === true;
     },
     validEmail() {
+      //fonction permettant de controler les paramètres de l'email
       const regexEmail =
         /[A-Za-z0-9](([_.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})/;
       return regexEmail.test(this.form.email) === true;
@@ -85,10 +87,12 @@ export default {
   methods: {
     onSubmit: function (event) {
       event.preventDefault();
+      //condition pour valider le formulaire avant envoi
       if (this.validPassword === true && this.validEmail === true) {
         this.$store.dispatch("login", this.form);
       }
       setTimeout(() => {
+        //fonction de renvoi de l'erreur généré par le serveur
         if (this.errors != "") {
           this.errorMsg = true;
         }

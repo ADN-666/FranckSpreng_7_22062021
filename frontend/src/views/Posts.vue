@@ -54,6 +54,7 @@ export default {
     ...mapState(["posts"]),
     ...mapActions(["allPosts", "allComs"]),
     postPagin() {
+      //fonction de pagination de la page
       return this.posts.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
@@ -65,6 +66,7 @@ export default {
   },
 
   mounted() {
+    //récupération et affichage des posts et commentaires
     this.$store.dispatch("allPosts");
     this.$store.dispatch("allComs");
   },

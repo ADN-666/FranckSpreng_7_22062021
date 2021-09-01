@@ -16,7 +16,7 @@
           <b-form-invalid-feedback :state="validUsername">
             3 caractères minimum
           </b-form-invalid-feedback>
-          <b-form-valid-feedback :state="validUsername"> Parfait !!. </b-form-valid-feedback>
+          <b-form-valid-feedback :state="validUsername"> Parfait ! </b-form-valid-feedback>
         </b-form-group>
         <b-form-group id="group-signup-email" label="Email" label-for="input-signup-email">
           <b-form-input
@@ -29,7 +29,7 @@
           <b-form-invalid-feedback :state="validEmail">
             L'email doit comporter un "@" et un "."
           </b-form-invalid-feedback>
-          <b-form-valid-feedback :state="validEmail"> Parfait !!. </b-form-valid-feedback>
+          <b-form-valid-feedback :state="validEmail"> Parfait ! </b-form-valid-feedback>
         </b-form-group>
         <b-form-group
           class="mb-5"
@@ -47,10 +47,10 @@
           <b-form-invalid-feedback :state="validPassword">
             8 caractères minimum dont une majuscule et un chiffre
           </b-form-invalid-feedback>
-          <b-form-valid-feedback :state="validPassword"> Parfait !!. </b-form-valid-feedback>
+          <b-form-valid-feedback :state="validPassword"> Parfait ! </b-form-valid-feedback>
         </b-form-group>
         <b-row class="mt-5 h5">
-          <b-col><p>( Section optionnel pouvant être complétée depuis votre profil )</p></b-col>
+          <b-col><p>(Section optionnelle pouvant être complétée depuis votre profil)</p></b-col>
         </b-row>
         <b-form-group id="group-signup-bio" label="Bio" label-for="input-signup-bio">
           <b-form-input
@@ -104,13 +104,16 @@ export default {
     ...mapState(["errors"]),
     ...mapActions(["signup"]),
     validPassword() {
+      //fonction de validation du mot de passe
       const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
       return this.password.length > 7 && regexPassword.test(this.password) === true;
     },
     validUsername() {
+      //fonction de validation du pseudo
       return this.username.length > 2;
     },
     validEmail() {
+      //fonction de validation de l'email
       const regexEmail =
         /[A-Za-z0-9](([_.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})/;
       return regexEmail.test(this.email) === true;
@@ -122,16 +125,19 @@ export default {
       this.image = event.target.files[0];
     },
     onSubmit() {
+      //fonction d'envoi du formulaire
       let formData = new FormData();
       formData.set("username", this.username);
       formData.set("email", this.email);
       formData.set("password", this.password);
       formData.set("bio", this.bio);
       formData.append("image", this.image);
+      //condition pour l'envoi du formulaire
       if (this.validPassword === true && this.validUsername === true && this.validEmail === true) {
         this.$store.dispatch("signup", formData);
       }
       setTimeout(() => {
+        //fonction pour la gestion des erreurs renvoyées par le serveur
         if (this.errors != "") {
           this.errorMsg = true;
         }

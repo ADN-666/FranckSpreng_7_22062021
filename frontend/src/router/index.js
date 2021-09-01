@@ -17,6 +17,8 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home,
+    //controle de l'état de l'utilisateur à l'arrivée sur la page home
+    //si il était déjà loggué il est envoyé sur la page des posts
     beforeEnter: (to, from, next) => {
       store.state.userInfos.isLog ? next({ name: "Posts" }) : next();
     },
@@ -46,11 +48,13 @@ const routes = [
     path: "/posts/all",
     name: "Posts",
     component: Posts,
+    //contrôle si le token n'a pas expiré si oui il doit se reloggué
     beforeEnter: (to, from, next) => {
       let token = jwtDecode(store.state.userInfos.token);
       if (token.exp > new Date().getTime() / 1000) {
         next();
       }
+      localStorage.removeItem("token");
       next({ name: "Home" });
     },
   },

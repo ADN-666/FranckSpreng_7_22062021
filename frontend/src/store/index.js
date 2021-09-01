@@ -51,7 +51,6 @@ export default new Vuex.Store({
     COMMENTS(state, payload) {
       state.comments = payload;
     },
-
     KEY(state) {
       state.upKey += 1;
     },

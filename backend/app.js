@@ -12,7 +12,15 @@ const usersRoutes = require("./routes/users");
 const likesRoutes = require("./routes/likes");
 const commentsRoutes = require("./routes/comments");
 
+// module de sécurité pour les en-têtes HTTP
+const helmet = require("helmet");
+// module de sécurité pour les attaques par déni de service
+const Ddos = require("ddos");
+const ddos = new Ddos({ burst: 10, limit: 15 });
 // appel des différentes fonctions
+
+app.use(helmet());
+app.use(ddos.express);
 
 app.use(headers);
 

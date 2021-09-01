@@ -134,8 +134,9 @@ export default {
 
   mounted() {
     setTimeout(() => {
+      //récupération du contenu mis à jour du commentaire
       this.formCommentUpdate.content = this.content;
-    }, 500);
+    }, 200);
   },
 
   computed: {
@@ -144,49 +145,54 @@ export default {
 
   methods: {
     updateComment() {
+      // maj du commentaire
       instance
         .put(`/posts/${this.comPostId}/comments/${this.comId}`, this.formCommentUpdate, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => {
+          this.$store.commit("KEY");
+          this.updateComShow = false;
+        })
         .catch((error) => {
           error;
         });
-      this.$store.commit("KEY");
-      this.updateComShow = false;
     },
     deleteComment() {
+      //suppression du commentaire
       instance
         .delete(`/posts/${this.comPostId}/comments/${this.comId}`, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
         })
-        .then((response) => response)
+        .then(() => {
+          this.$store.commit("KEY");
+          this.deleteComShow = false;
+        })
         .catch((error) => {
           error;
         });
-      this.deleteComShow = false;
-      this.$store.commit("KEY");
     },
     date(createdAt) {
+      //formatage de la date de publication du commentaire
       let timestamp = Date.parse(createdAt);
       let localDate = new Date(timestamp);
-      moment.updateLocale("en", {
+      moment.updateLocale("fr", {
         relativeTime: {
           future: "in %s",
           past: "%s",
-          s: "une seconde",
+          s: "moins d'une minute",
           ss: "%d secondes",
-          m: "une minute",
+          m: "1 minute",
           mm: "%d minutes",
-          h: "une heure",
+          h: "1 heure",
           hh: "%d heures",
-          d: "un jour",
+          d: "1 jour",
           dd: "%d jours",
-          w: "une semaine",
+          w: "1 semaine",
           ww: "%d semaines",
-          M: "un mois",
+          M: "1 mois",
           MM: "%d mois",
-          y: "une année",
+          y: "1 année",
           yy: "%d années",
         },
       });

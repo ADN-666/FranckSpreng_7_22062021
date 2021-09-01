@@ -37,7 +37,7 @@
         <b-card-footer class="mt-1">
           <b-row class="align-items-center">
             <b-col>
-              <b-button :to="{ path: `/posts/${user.id}` }"
+              <b-button :disabled="user.nbPosts == 0" :to="{ path: `/posts/${user.id}` }"
                 ><b-badge class="mr-1" variant="light">{{ user.nbPosts }}</b-badge>
                 <span v-if="user.nbPosts < 2">Publication</span
                 ><span v-else>Publications</span></b-button
@@ -80,6 +80,7 @@ export default {
   computed: {
     ...mapState(["userInfos"]),
     usersPagin() {
+      //fonction de pagination
       return this.users
         .filter((user) => user.username.toLowerCase().startsWith(this.inputSearch))
         .slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);

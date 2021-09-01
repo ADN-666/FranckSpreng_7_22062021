@@ -35,7 +35,7 @@
         </b-row>
       </template>
       <b-card-body>
-        <b-card-title>{{ title }}</b-card-title>
+        <b-card-title class="h5">{{ title }}</b-card-title>
         <b-card-img
           v-b-modal="'modal-img' + postId"
           ref="img"
@@ -46,7 +46,7 @@
           style="max-width: 20%"
         >
         </b-card-img>
-        <b-card-text> {{ content }} </b-card-text>
+        <b-card-text class="h6"> {{ content }} </b-card-text>
       </b-card-body>
       <b-card-footer class="mt-1">
         <b-row class="align-items-center"
@@ -105,9 +105,9 @@
               class="rounded-0"
             ></b-form-input>
             <b-form-invalid-feedback :state="validTitle">
-              La publication doit comporter un titre !!
+              La publication doit comporter un titre !
             </b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validTitle"> Parfait !!. </b-form-valid-feedback>
+            <b-form-valid-feedback :state="validTitle"> Parfait ! </b-form-valid-feedback>
           </b-form-group>
           <b-form-group
             id="group-post-content"
@@ -123,9 +123,9 @@
               class="rounded-0"
             ></b-form-textarea>
             <b-form-invalid-feedback :state="validContent">
-              La publication doit comporter un contenu !!
+              La publication doit comporter un contenu !
             </b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validContent"> Parfait !!. </b-form-valid-feedback>
+            <b-form-valid-feedback :state="validContent"> Parfait ! </b-form-valid-feedback>
           </b-form-group>
           <b-form-group id="group-post-image" class="text-dark">
             <p class="mb-0">
@@ -298,6 +298,7 @@ export default {
 
   mounted() {
     setTimeout(() => {
+      //récupération de la maj du post
       (this.formPostUpdate.title = this.title),
         (this.formPostUpdate.content = this.content),
         (this.formPostUpdate.imageUpdate = this.imageUrl);
@@ -308,22 +309,27 @@ export default {
     ...mapState(["userInfos", "comments"]),
 
     filteredComments() {
+      //fonction de filtre des commentaires pour les attribuer au bon post par l'id
       return this.comments.filter((com) => com.postId == this.postId);
     },
     validTitle() {
-      return this.formPostUpdate.title.length > 1;
+      //validation du titre du post à la maj
+      return this.formPostUpdate.title.length > 2;
     },
     validContent() {
-      return this.formPostUpdate.content.length > 28;
+      //validation du contenu du post à la maj
+      return this.formPostUpdate.content.length > 10;
     },
   },
 
   methods: {
     upload(event) {
+      // récupération de l'image dans un req.file au changement de l'input
       this.formPostUpdate.imageUpdate = event.target.files[0];
       this.newUrl = event.target.files[0];
     },
     reset(event) {
+      //suppression de l'image du post
       event.preventDefault();
       this.formPostUpdate.imageUpdate = null;
       this.newUrl = "";
@@ -333,6 +339,7 @@ export default {
       });
     },
     updatePost() {
+      //màj du post avec création d'un formData et récupération ou non de l'image
       let formData = new FormData();
       formData.set("title", this.formPostUpdate.title);
       formData.set("content", this.formPostUpdate.content);
@@ -354,6 +361,7 @@ export default {
       }
     },
     deletePost() {
+      //suppression du post
       instance
         .delete(`/posts/${this.postId}`, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
@@ -367,6 +375,7 @@ export default {
         });
     },
     createComment() {
+      //création d'un commentaire
       instance
         .post(`/posts/${this.postId}/comments`, this.formCommentCreate, {
           headers: { Authorization: `bearer ${this.userInfos.token}` },
@@ -379,6 +388,8 @@ export default {
         });
     },
     like() {
+      //création ou màj d'un like avec condition pour faire passer un like existant
+      // de true à false ou inversement
       if (this.P_Likes.isLike == true) {
         this.formLike.isLike = false;
       } else {
@@ -394,6 +405,8 @@ export default {
         });
     },
     dislike() {
+      //création ou màj d'un dislike avec condition pour faire passer un like existant
+      // de true à false ou inversement
       if (this.P_Likes.isDislike == true) {
         this.formLike.isDislike = false;
       } else {
@@ -410,9 +423,10 @@ export default {
     },
 
     date(createdAt) {
+      //formatage de la date de publication du post
       let timestamp = Date.parse(createdAt);
       let localDate = new Date(timestamp);
-      moment.updateLocale("en", {
+      moment.updateLocale("fr", {
         relativeTime: {
           future: "in %s",
           past: "%s",

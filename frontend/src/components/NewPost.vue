@@ -110,9 +110,11 @@ export default {
   computed: {
     ...mapState(["userInfos"]),
     validTitle() {
+      //validation du titre avec 2 caractères min
       return this.form.title.length > 1;
     },
     validContent() {
+      //validation du contenu avec 29 caractères min
       return this.form.content.length > 28;
     },
   },
@@ -123,6 +125,7 @@ export default {
     },
 
     onSubmit(event) {
+      //envoi du nouveau post avec création d'un objet formData
       event.preventDefault();
       let formData = new FormData();
       formData.append("title", this.form.title);
@@ -143,6 +146,7 @@ export default {
       }
     },
     onReset(event) {
+      //effacement du nouveau post en cours et bascule en appuyant sur le bouton
       event.preventDefault();
       this.form.title = "";
       this.form.content = "";

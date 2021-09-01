@@ -1,5 +1,5 @@
 /* fonction permettant l'authentification de l'utilisateur au login et permettant la création
-d'un jeton qui sera utilisé sur les routes sauces et likes */
+d'un jeton qui sera utilisé sur les différentes routes */
 
 const jwt = require("jsonwebtoken");
 

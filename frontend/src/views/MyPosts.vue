@@ -1,13 +1,7 @@
 <template>
   <div class="MyPosts container">
     <b-jumbotron bg-variant="white" class="my-5 shadow-lg">
-      <h4 v-if="this.posts.length == 0 && userInfos.userId == $route.params.id">
-        Vous n'avez pas de publication pour l'instant
-      </h4>
-      <h4 v-else-if="this.posts.length == 0 && userInfos.userId != $route.params.id">
-        Cet utilisateur n'a pas de publication pour l'instant
-      </h4>
-      <NewPost v-if="this.posts.length !== 0 || userInfos.userId == $route.params.id" />
+      <NewPost />
       <Post
         v-for="post of postPagin"
         :postId="post.id"
@@ -58,18 +52,22 @@ export default {
     };
   },
 
+  updated() {
+    //condition permettant le renvoi vers la page des posts si il n'y en a pas
+    if (this.posts.length == 0) {
+      this.$router.push({ name: "Posts" });
+    }
+  },
+
   mounted() {
+    //affichage des posts et commentaires au rendu de la page
     this.user = this.$route.path;
     this.getPosts();
     this.$store.dispatch("allComs");
-    setTimeout(() => {
-      if (this.posts.length == 0 && this.userInfos.userId != this.$route.params.id) {
-        this.$router.push({ name: "Users" });
-      }
-    }, 2500);
   },
 
   beforeRouteUpdate(to, from, next) {
+    //controle des paramètres de la route pour renvoi vers la page concernée
     if (this.user == this.$route.path) {
       next();
     }
@@ -80,6 +78,7 @@ export default {
   computed: {
     ...mapState(["userInfos"]),
     postPagin() {
+      //fonction de pagination de la page
       return this.posts.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
