@@ -2,7 +2,7 @@
 
 ## Création d'un réseau social d'entreprise pour Groupomania
 
-Télécharger le repository et suivez les instructions ci-après pour installer ce projet en local
+Téléchargé le repository et suivez les instructions ci-après pour installer ce projet en local
 
 ## prérequis
 
