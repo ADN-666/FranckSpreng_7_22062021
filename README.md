@@ -16,7 +16,7 @@ Télécharger le repository et suivez les instructions ci-après pour installer 
 * Installez toutes les dépendances du projet : `npm install`
 * créez la base de donnée : `npx sequelize db:create`
 * migrez la base de donnée : `npx sequelize db:migrate`
-* remplissez la base de donnée : `npx sequelize db:seed:all
+* remplissez la base de donnée : `npx sequelize db:seed:all`
 * Démarrez le serveur Node.js : `nodemon`
 
 ## Installation et démarrage du Frontend
