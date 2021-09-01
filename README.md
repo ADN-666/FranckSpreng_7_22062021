@@ -1,4 +1,4 @@
-# Projet n°7 OpenClassrooms
+# OpenClassrooms - Projet n°7 - Groupomania
 
 ## Création d'un réseau social d'entreprise pour Groupomania
 
