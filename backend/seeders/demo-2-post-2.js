@@ -5,9 +5,9 @@ module.exports = {
     return queryInterface.bulkInsert("Posts", [
       {
         userId: 2,
-        title: "Test 2",
-        content: "Ceci est le message de test n°2",
-        imageUrl: null,
+        title: "Moi",
+        content: "Mignon non ?",
+        imageUrl: "http://localhost:3000/images/IMG_20210416_192501.JPG1630490295070.jpg",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
