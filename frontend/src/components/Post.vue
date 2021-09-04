@@ -76,7 +76,7 @@
           ></b-col>
 
           <b-col cols="6" class="text-right">
-            <b-button v-b-toggle="'collapse' + postId"
+            <b-button v-b-toggle="'collapse' + postId" variant="info"
               ><b-badge class="mr-1" variant="light">{{ nbComments }}</b-badge
               ><span v-if="nbComments < 2">Commentaire</span
               ><span v-else>Commentaires</span></b-button
@@ -185,7 +185,7 @@
       <b-row>
         <b-col class="col-7 mx-auto"
           ><b-form-input
-            id="input-comment"
+            :id="'input-comment' + postId"
             v-model="formCommentCreate.content"
             type="text"
             class="rounded-pill mx-auto my-3 border-dark text-black"
@@ -456,8 +456,5 @@ export default {
 #post {
   border: 1px solid black;
   box-shadow: 1px 1px 5px 1px black;
-}
-#input-comment {
-  background-color: rgb(213, 215, 216);
 }
 </style>

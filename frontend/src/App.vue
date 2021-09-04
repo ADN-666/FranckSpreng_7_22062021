@@ -1,7 +1,7 @@
 <template>
   <div id="app" :key="upKey">
     <header>
-      <b-navbar toggleable="lg" type="dark" variant="info">
+      <b-navbar toggleable="lg" type="light" variant="info">
         <b-navbar-brand
           ><img
             src="./assets/icon-left-font-monochrome-white.svg"
@@ -40,9 +40,11 @@
     <router-view />
 
     <footer>
-      <b-navbar type="light" variant="light">
+      <b-navbar variant="light">
         <b-navbar-nav class="mx-auto">
-          <b-nav-item class="mx-5">Copyright : Groupomania 2021</b-nav-item>
+          <b-nav-item class="mx-5" id="nav"
+            ><span id="span" class="text-danger h4">Copyright : Groupomania 2021</span></b-nav-item
+          >
         </b-navbar-nav>
       </b-navbar>
     </footer>
@@ -88,5 +90,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: black;
+}
+#span {
+  font-weight: bold;
 }
 </style>

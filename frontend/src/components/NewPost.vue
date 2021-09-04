@@ -1,6 +1,10 @@
 <template>
   <div>
-    <b-button v-b-toggle="'collapse'" :class="visible ? null : 'collapsed'" class="mb-5"
+    <b-button
+      v-b-toggle="'collapse'"
+      :class="visible ? null : 'collapsed'"
+      class="mb-5"
+      variant="info"
       >Créer un post</b-button
     >
     <b-collapse id="collapse" class="mb-5" v-model="visible">
